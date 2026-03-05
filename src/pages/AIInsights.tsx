@@ -1,107 +1,249 @@
-import { Brain, TrendingUp, Clock, Lightbulb, Leaf, BarChart3 } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Brain,
+  TrendingUp,
+  Clock,
+  Lightbulb,
+  Leaf,
+  BarChart3,
+  AlertTriangle,
+  Loader2,
+} from "lucide-react";
 import { motion } from "framer-motion";
+import { api } from "@/lib/api";
 
-const insights = [
-  {
-    icon: TrendingUp,
-    title: "Predicted Monthly Consumption",
-    value: "380 units",
-    description: "Based on your usage pattern over the last 3 months, your predicted consumption is 380 units.",
-    color: "text-energy-blue",
-    bg: "bg-energy-blue/10",
-  },
-  {
-    icon: BarChart3,
-    title: "Estimated Electricity Bill",
-    value: "₹810.00",
-    description: "Your estimated TNEB bill for this month based on current consumption trends.",
-    color: "text-energy-green",
-    bg: "bg-energy-green/10",
-  },
-  {
-    icon: Clock,
-    title: "Peak Usage Hours",
-    value: "7 PM – 10 PM",
-    description: "Peak electricity usage occurs between 7 PM and 10 PM. Consider shifting non-essential loads.",
-    color: "text-energy-orange",
-    bg: "bg-energy-orange/10",
-  },
-  {
-    icon: Lightbulb,
-    title: "Energy Saving Tip",
-    value: "Save up to 15%",
-    description: "Switch to LED lighting and use appliances during off-peak hours to reduce consumption by 15%.",
-    color: "text-energy-yellow",
-    bg: "bg-energy-yellow/10",
-  },
-  {
-    icon: Leaf,
-    title: "Carbon Footprint",
-    value: "285 kg CO₂",
-    description: "Your monthly carbon footprint is 285 kg CO₂. That's 12% less than the regional average.",
-    color: "text-energy-green",
-    bg: "bg-energy-green/10",
-  },
-  {
-    icon: Brain,
-    title: "Anomaly Detection",
-    value: "2 detected",
-    description: "AI detected 2 unusual consumption spikes this week. Review alerts for details.",
-    color: "text-energy-red",
-    bg: "bg-energy-red/10",
-  },
-];
+interface InsightCardProps {
+  icon: React.ElementType;
+  title: string;
+  value: string;
+  description: string;
+  color: string;
+  bg: string;
+}
 
-const recommendations = [
-  "Run washing machine and dishwasher during off-peak hours (10 PM – 6 AM)",
-  "Replace old AC with 5-star rated inverter AC to save 30% energy",
-  "Use smart power strips to eliminate standby power consumption",
-  "Set AC thermostat to 24°C instead of 20°C to save 20% cooling costs",
-  "Install solar panels to offset 40-60% of your electricity consumption",
-];
-
-const AIInsights = () => (
-  <div className="space-y-6">
-    <div>
-      <h1 className="text-2xl font-bold text-foreground">AI Insights</h1>
-      <p className="text-sm text-muted-foreground">Machine learning-powered energy analysis</p>
-    </div>
-
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {insights.map((item, i) => (
-        <motion.div
-          key={item.title}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.1 }}
-          className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-all"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className={`p-2 rounded-lg ${item.bg}`}>
-              <item.icon className={`h-4 w-4 ${item.color}`} />
-            </div>
-            <span className="text-sm font-medium text-card-foreground">{item.title}</span>
-          </div>
-          <p className="text-xl font-bold font-mono text-card-foreground mb-2">{item.value}</p>
-          <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
-        </motion.div>
-      ))}
-    </div>
-
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card rounded-xl p-6 shadow-card border border-border">
-      <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-        <Lightbulb className="h-4 w-4 text-energy-yellow" /> Energy Saving Recommendations
-      </h3>
-      <div className="space-y-3">
-        {recommendations.map((rec, i) => (
-          <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-            <span className="text-xs font-bold text-primary mt-0.5">{i + 1}.</span>
-            <p className="text-sm text-card-foreground">{rec}</p>
-          </div>
-        ))}
+const InsightCard = ({ icon: Icon, title, value, description, color, bg }: InsightCardProps) => (
+  <div className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-all">
+    <div className="flex items-center gap-3 mb-3">
+      <div className={`p-2 rounded-lg ${bg}`}>
+        <Icon className={`h-4 w-4 ${color}`} />
       </div>
-    </motion.div>
+      <span className="text-sm font-medium text-card-foreground">{title}</span>
+    </div>
+    <p className="text-xl font-bold font-mono text-card-foreground mb-2">{value}</p>
+    <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
   </div>
 );
+
+const AIInsights = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [consumption, setConsumption] = useState<{
+    predicted_units: number;
+    confidence: number;
+  } | null>(null);
+  const [bill, setBill] = useState<{ predicted_units: number; estimated_bill: number } | null>(null);
+  const [peakHours, setPeakHours] = useState<{
+    peak_hours: string[];
+    avg_peak_power: number;
+  } | null>(null);
+  const [anomalies, setAnomalies] = useState<
+    { timestamp: string; power: number; expected: number; severity: string }[]
+  >([]);
+  const [recommendations, setRecommendations] = useState<
+    { tip: string; potential_saving: string }[]
+  >([]);
+  const [carbon, setCarbon] = useState<{
+    total_kwh: number;
+    co2_kg: number;
+    vs_regional_avg: string;
+    pct_diff_from_avg: number;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    const run = async () => {
+      const ML = import.meta.env.VITE_ML_URL || "http://localhost:5001";
+      const fetchDirect = async <T>(path: string): Promise<T | null> => {
+        try {
+          const r = await fetch(`${ML}${path}`);
+          const d = await r.json().catch(() => ({}));
+          return r.ok ? (d as T) : null;
+        } catch {
+          return null;
+        }
+      };
+      const results = await Promise.allSettled([
+        fetchDirect<{ predicted_units: number; confidence: number }>("/api/ml/predict-consumption"),
+        fetchDirect<{ predicted_units: number; estimated_bill: number }>("/api/ml/predict-bill"),
+        fetchDirect<{ peak_hours: string[]; avg_peak_power: number }>("/api/ml/peak-hours"),
+        fetchDirect<{ anomalies: { timestamp: string; power: number; expected: number; severity: string }[] }>("/api/ml/anomalies"),
+        fetchDirect<{ recommendations: { tip: string; potential_saving: string }[] }>("/api/ml/recommendations"),
+        fetchDirect<{ total_kwh: number; co2_kg: number; vs_regional_avg: string; pct_diff_from_avg: number }>("/api/ml/carbon-footprint"),
+      ]);
+      if (cancelled) return;
+      const [cons, b, peak, anom, rec, carb] = results.map((r) => (r.status === "fulfilled" ? r.value : null));
+      if (cons) setConsumption(cons);
+      if (b) setBill(b);
+      if (peak) setPeakHours(peak);
+      if (anom) setAnomalies(anom.anomalies || []);
+      if (rec) setRecommendations(rec.recommendations || []);
+      if (carb) setCarbon(carb);
+      if (!cons && !b && !peak && !anom && !rec && !carb) {
+        setError("Could not load any insights. Ensure ML service is running (npm run ml).");
+      }
+      setLoading(false);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">AI Insights</h1>
+          <p className="text-sm text-muted-foreground">Machine learning-powered energy analysis</p>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">AI Insights</h1>
+          <p className="text-sm text-muted-foreground">Machine learning-powered energy analysis</p>
+        </div>
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-destructive flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 shrink-0" />
+          {error}. Ensure both backend (npm run api) and ML service (npm run ml) are running.
+        </div>
+      </div>
+    );
+  }
+
+  const insightsData: (InsightCardProps & { key: string })[] = [
+    {
+      key: "consumption",
+      icon: TrendingUp,
+      title: "Predicted Monthly Consumption",
+      value: `${consumption?.predicted_units ?? 0} units`,
+      description: `Based on your usage over the last 90 days. Model confidence: ${Math.round((consumption?.confidence ?? 0) * 100)}%.`,
+      color: "text-energy-blue",
+      bg: "bg-energy-blue/10",
+    },
+    {
+      key: "bill",
+      icon: BarChart3,
+      title: "Estimated Electricity Bill",
+      value: `₹${(bill?.estimated_bill ?? 0).toFixed(2)}`,
+      description: `TNEB bill estimate for this month based on predicted consumption of ${bill?.predicted_units ?? 0} units.`,
+      color: "text-energy-green",
+      bg: "bg-energy-green/10",
+    },
+    {
+      key: "peak",
+      icon: Clock,
+      title: "Peak Usage Hours",
+      value: peakHours?.peak_hours?.join(", ") || "—",
+      description: `Peak electricity usage hours. Avg peak power: ${peakHours?.avg_peak_power ?? 0} W. Shift non-essential loads outside these hours.`,
+      color: "text-energy-orange",
+      bg: "bg-energy-orange/10",
+    },
+    {
+      key: "recommendation",
+      icon: Lightbulb,
+      title: "Energy Saving Tip",
+      value: recommendations[0]?.potential_saving || "Up to 15%",
+      description: recommendations[0]?.tip || "Switch to LED lighting and use appliances during off-peak hours.",
+      color: "text-energy-yellow",
+      bg: "bg-energy-yellow/10",
+    },
+    {
+      key: "carbon",
+      icon: Leaf,
+      title: "Carbon Footprint",
+      value: `${carbon?.co2_kg ?? 0} kg CO₂`,
+      description: `Monthly footprint from ${carbon?.total_kwh ?? 0} kWh. You are ${carbon?.vs_regional_avg ?? "—"} regional average (${carbon?.pct_diff_from_avg ?? 0}%).`,
+      color: "text-energy-green",
+      bg: "bg-energy-green/10",
+    },
+    {
+      key: "anomalies",
+      icon: Brain,
+      title: "Anomaly Detection",
+      value: `${anomalies.length} detected`,
+      description:
+        anomalies.length > 0
+          ? `Unusual consumption spikes detected. Review alerts for details.`
+          : "No unusual spikes detected in your consumption pattern.",
+      color: "text-energy-red",
+      bg: "bg-energy-red/10",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">AI Insights</h1>
+        <p className="text-sm text-muted-foreground">Machine learning-powered energy analysis</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {insightsData.map((item, i) => (
+          <motion.div
+            key={item.key}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+          >
+            <InsightCard
+              icon={item.icon}
+              title={item.title}
+              value={item.value}
+              description={item.description}
+              color={item.color}
+              bg={item.bg}
+            />
+          </motion.div>
+        ))}
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="bg-card rounded-xl p-6 shadow-card border border-border"
+      >
+        <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+          <Lightbulb className="h-4 w-4 text-energy-yellow" /> Energy Saving Recommendations
+        </h3>
+        <div className="space-y-3">
+          {recommendations.length > 0 ? (
+            recommendations.map((rec, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                <span className="text-xs font-bold text-primary mt-0.5">{i + 1}.</span>
+                <div>
+                  <p className="text-sm text-card-foreground">{rec.tip}</p>
+                  <span className="text-xs text-energy-green font-medium">Save {rec.potential_saving}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Start monitoring your energy to get personalized recommendations.
+            </p>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 export default AIInsights;

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { api, setToken } from "@/lib/api";
 
 interface User {
   id: string;
@@ -28,22 +29,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return stored ? JSON.parse(stored) : null;
   });
 
-  const login = useCallback(async (email: string, _password: string) => {
-    // Simulated auth
-    await new Promise((r) => setTimeout(r, 800));
-    const u: User = { id: "1", name: email.split("@")[0], email };
-    localStorage.setItem("iot_user", JSON.stringify(u));
-    setUser(u);
+
+  const login = useCallback(async (email: string, password: string) => {
+    const res = await api.auth.login(email, password);
+    setToken(res.token);
+    setUser(res.user);
+    localStorage.setItem("iot_user", JSON.stringify(res.user));
   }, []);
 
-  const register = useCallback(async (name: string, email: string, _password: string) => {
-    await new Promise((r) => setTimeout(r, 800));
-    const u: User = { id: "1", name, email };
-    localStorage.setItem("iot_user", JSON.stringify(u));
-    setUser(u);
+  const register = useCallback(async (name: string, email: string, password: string) => {
+    const res = await api.auth.register(name, email, password);
+    setToken(res.token);
+    setUser(res.user);
+    localStorage.setItem("iot_user", JSON.stringify(res.user));
+  }, []);
+
+  useEffect(() => {
+    const t = localStorage.getItem("energyiq_token");
+    if (t) setToken(t);
   }, []);
 
   const logout = useCallback(() => {
+    setToken(null);
     localStorage.removeItem("iot_user");
     setUser(null);
   }, []);
