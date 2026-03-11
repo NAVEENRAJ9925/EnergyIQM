@@ -133,12 +133,12 @@ export const api = {
         regional_avg_kwh: number;
       }>("/ml/carbon-footprint"),
     /** Fallback: fetch directly from ML service */
-    _direct: async <T>(path: string): Promise<T> => {
-      const url = `${ML_BASE}${path}`;
-      const res = await fetch(url);
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((data.error as string) || res.statusText || "Request failed");
-      return data as T;
-    },
+    _direct: async (path: string) => {
+  const url = `${ML_BASE}${path}`;
+  const res = await fetch(url);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || res.statusText || "Request failed");
+  return data;
+},
   },
 };
