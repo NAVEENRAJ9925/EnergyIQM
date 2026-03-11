@@ -53,13 +53,22 @@ h1{color:#16a34a;}
   const subject = critical.length > 0
     ? `EnergyIQ: ${critical.length} Critical Alert(s)`
     : `EnergyIQ: ${alerts.length} Energy Alert(s)`;
-  await trans.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
-    to,
-    subject,
-    html,
-  });
-  return { sent: true };
+
+  try {
+    await trans.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to,
+      subject,
+      html,
+    });
+    return { sent: true };
+  } catch (err) {
+    console.error('Failed to send alert email:', err);
+    return {
+      sent: false,
+      reason: err && err.message ? err.message : 'Failed to send email',
+    };
+  }
 }
 
 module.exports = { sendAlertEmail, getTransporter };

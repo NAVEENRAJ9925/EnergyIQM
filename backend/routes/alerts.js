@@ -9,41 +9,102 @@ const router = express.Router();
 
 const iconMap = { critical: 'Zap', warning: 'TrendingUp', info: 'AlertTriangle' };
 
-// GET /api/alerts — ML + usage + bill based alerts
+// GET /api/alerts — ML-based alerts, persisted in MongoDB, only uncleared alerts
 router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
-    let alerts = await generateAlerts(userId);
-    const dbAlerts = await Alert.find({ $or: [{ userId }, { userId: null }] })
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .lean();
-    const merged = [
-      ...alerts.map((a, i) => ({
-        id: `gen-${i}`,
-        type: a.type,
+
+    // 1) Generate latest ML-driven alerts (in-memory)
+    const generated = await generateAlerts(userId);
+
+    // 2) Persist new alerts into MongoDB (dedupe by title + description + userId)
+    for (const a of generated) {
+      // Skip obviously empty/placeholder alerts
+      if (!a || !a.title || !a.description) continue;
+      // Avoid duplicates: same title+description for same user that is not cleared
+      const exists = await Alert.findOne({
+        userId: userId || null,
         title: a.title,
         description: a.description,
-        time: a.time,
-        icon: iconMap[a.type] || 'AlertTriangle',
-      })),
-      ...dbAlerts.map(a => ({
+        cleared: false,
+      }).lean();
+      if (!exists) {
+        await Alert.create({
+          type: a.type,
+          title: a.title,
+          description: a.description,
+          time: a.time || '',
+          timestamp: a.timestamp || null,
+          data: a.data || null,
+          userId: userId || null,
+        });
+      }
+    }
+
+    // 3) Return only uncleared alerts, newest first
+    const dbAlerts = await Alert.find({
+      $or: [{ userId }, { userId: null }],
+      cleared: false,
+    })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+
+    const payload = dbAlerts.map((a) => {
+      const ts = a.timestamp || a.createdAt;
+      return {
         id: a._id.toString(),
         type: a.type,
         title: a.title,
         description: a.description,
-        time: a.time || formatTimeAgo(a.createdAt),
+        // Human-readable label for quick scanning
+        time: formatTimeAgo(ts),
+        // Exact ISO timestamp for precise display/debugging
+        timestamp: ts ? ts.toISOString() : null,
+        data: a.data || null,
         icon: iconMap[a.type] || 'AlertTriangle',
-      })),
-    ];
-    const seen = new Set();
-    const unique = merged.filter(a => {
-      const k = `${a.title}|${a.description}`;
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
+      };
     });
-    res.json(unique.slice(0, 50));
+
+    res.json(payload);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/alerts/clear — mark all alerts for the user as cleared
+router.post('/clear', auth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const result = await Alert.updateMany(
+      { userId: userId || null, cleared: false },
+      { $set: { cleared: true } },
+    );
+    res.json({ cleared: true, matched: result.matchedCount ?? result.n, modified: result.modifiedCount ?? result.nModified });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/alerts/:id/clear — clear a specific alert
+router.post('/:id/clear', auth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+    const updated = await Alert.findOneAndUpdate(
+      {
+        _id: id,
+        // Allow clearing both user-specific and global alerts, but only for the current user
+        $or: [{ userId }, { userId: null }],
+        cleared: false,
+      },
+      { $set: { cleared: true } },
+      { new: true },
+    );
+    if (!updated) {
+      return res.status(404).json({ error: 'Alert not found or already cleared' });
+    }
+    res.json({ cleared: true, id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

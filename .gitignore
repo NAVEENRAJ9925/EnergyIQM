@@ -11,6 +11,7 @@ node_modules
 dist
 .env
 backend/.env
+ml-service/.env
 dist-ssr
 *.local
 

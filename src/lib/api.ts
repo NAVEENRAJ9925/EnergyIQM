@@ -74,8 +74,25 @@ export const api = {
   },
   alerts: () =>
     request<
-      { id: string; type: string; title: string; description: string; time: string; icon: string }[]
+      {
+        id: string;
+        type: string;
+        title: string;
+        description: string;
+        time: string;
+        icon: string;
+        timestamp?: string | null;
+        data?: unknown;
+      }[]
     >("/alerts"),
+  alertsClear: () =>
+    request<{ cleared: boolean; matched: number; modified: number }>("/alerts/clear", {
+      method: "POST",
+    }),
+  alertsClearOne: (id: string) =>
+    request<{ cleared: boolean; id: string }>(`/alerts/${id}/clear`, {
+      method: "POST",
+    }),
   alertsSendEmail: () =>
     request<{ sent: boolean; message?: string; reason?: string }>("/alerts/send-email", {
       method: "POST",

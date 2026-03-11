@@ -9,10 +9,15 @@ def detect_peak_hours(readings: list[dict], top_n: int = 3) -> dict:
     Identify top N peak hours by average power consumption.
     Returns peak_hours (e.g. "19:00-20:00") and avg_peak_power.
     """
+    # Not enough data to compute meaningful peaks.
+    # Returning empty peaks avoids "sample" default hours showing up as real insights.
     if not readings or len(readings) < 24:
         return {
-            "peak_hours": ["19:00-20:00", "20:00-21:00", "21:00-22:00"],
+            "peak_hours": [],
             "avg_peak_power": 0,
+            "reason": "insufficient_data",
+            "min_points_required": 24,
+            "points_received": 0 if not readings else len(readings),
         }
 
     df = pd.DataFrame(readings)

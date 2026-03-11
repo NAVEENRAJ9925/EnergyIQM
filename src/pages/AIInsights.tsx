@@ -22,15 +22,18 @@ interface InsightCardProps {
 }
 
 const InsightCard = ({ icon: Icon, title, value, description, color, bg }: InsightCardProps) => (
-  <div className="bg-card rounded-xl p-5 shadow-card border border-border hover:shadow-card-hover transition-all">
-    <div className="flex items-center gap-3 mb-3">
-      <div className={`p-2 rounded-lg ${bg}`}>
-        <Icon className={`h-4 w-4 ${color}`} />
+  <div className="relative rounded-2xl p-5 border border-border bg-card shadow-card overflow-hidden hover:shadow-card-hover transition-shadow dark:border-white/5 dark:bg-slate-950/70 dark:shadow-[0_16px_40px_rgba(15,23,42,0.9)] dark:hover:shadow-[0_20px_55px_rgba(15,23,42,1)]">
+    <div className="pointer-events-none absolute inset-x-6 -top-10 h-24 bg-gradient-to-b from-white/10 via-transparent to-transparent blur-2xl" />
+    <div className="relative">
+      <div className="flex items-center gap-3 mb-3">
+        <div className={`p-2 rounded-lg ${bg}`}>
+          <Icon className={`h-4 w-4 ${color}`} />
+        </div>
+        <span className="text-sm font-medium text-card-foreground">{title}</span>
       </div>
-      <span className="text-sm font-medium text-card-foreground">{title}</span>
+      <p className="text-xl font-bold font-mono text-card-foreground mb-2">{value}</p>
+      <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
     </div>
-    <p className="text-xl font-bold font-mono text-card-foreground mb-2">{value}</p>
-    <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
   </div>
 );
 
@@ -190,10 +193,21 @@ const AIInsights = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">AI Insights</h1>
-        <p className="text-sm text-muted-foreground">Machine learning-powered energy analysis</p>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/15 text-violet-700 dark:text-violet-200 text-[11px] font-medium mb-3">
+          <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse-glow" />
+          ML INSIGHTS
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+          AI-powered{" "}
+          <span className="bg-gradient-to-r from-violet-500 via-fuchsia-500 to-sky-400 bg-clip-text text-transparent">
+            Energy Intelligence
+          </span>
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Forecast consumption, predict bills, detect anomalies, and measure carbon footprint using the ML microservice.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -217,14 +231,15 @@ const AIInsights = () => {
       </div>
 
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="bg-card rounded-xl p-6 shadow-card border border-border"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative rounded-2xl p-6 border border-border bg-card shadow-card overflow-hidden dark:border-white/5 dark:bg-slate-950/70 dark:shadow-[0_18px_50px_rgba(15,23,42,1)]"
       >
-        <h3 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
+        <div className="pointer-events-none absolute inset-x-10 -top-16 h-40 bg-gradient-to-b from-yellow-400/20 via-transparent to-transparent blur-3xl" />
+        <h3 className="relative text-sm font-semibold text-slate-100 mb-4 flex items-center gap-2">
           <Lightbulb className="h-4 w-4 text-energy-yellow" /> Energy Saving Recommendations
         </h3>
-        <div className="space-y-3">
+        <div className="relative space-y-3">
           {recommendations.length > 0 ? (
             recommendations.map((rec, i) => (
               <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
