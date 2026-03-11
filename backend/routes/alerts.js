@@ -9,7 +9,7 @@ const router = express.Router();
 
 const iconMap = { critical: 'Zap', warning: 'TrendingUp', info: 'AlertTriangle' };
 
-// GET /api/alerts — ML-based alerts, persisted in MongoDB, only uncleared alerts
+// GET /api/alerts — ML-based alerts, persisted in MongoDB, only uncleared alerts for this user
 router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -41,9 +41,9 @@ router.get('/', auth, async (req, res) => {
       }
     }
 
-    // 3) Return only uncleared alerts, newest first
+    // 3) Return only uncleared alerts for this user, newest first
     const dbAlerts = await Alert.find({
-      $or: [{ userId }, { userId: null }],
+      userId,
       cleared: false,
     })
       .sort({ createdAt: -1 })
@@ -76,17 +76,14 @@ router.get('/', auth, async (req, res) => {
 router.post('/clear', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const result = await Alert.updateMany(
-      { userId: userId || null, cleared: false },
-      { $set: { cleared: true } },
-    );
+    const result = await Alert.updateMany({ userId, cleared: false }, { $set: { cleared: true } });
     res.json({ cleared: true, matched: result.matchedCount ?? result.n, modified: result.modifiedCount ?? result.nModified });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/alerts/:id/clear — clear a specific alert
+// POST /api/alerts/:id/clear — clear a specific alert for this user
 router.post('/:id/clear', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -94,8 +91,7 @@ router.post('/:id/clear', auth, async (req, res) => {
     const updated = await Alert.findOneAndUpdate(
       {
         _id: id,
-        // Allow clearing both user-specific and global alerts, but only for the current user
-        $or: [{ userId }, { userId: null }],
+        userId,
         cleared: false,
       },
       { $set: { cleared: true } },

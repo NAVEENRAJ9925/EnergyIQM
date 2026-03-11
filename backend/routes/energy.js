@@ -13,25 +13,33 @@ function calculateBill(units) {
   return 100 * 2.25 + 200 * 4.5 + 100 * 6 + (units - 500) * 8;
 }
 
-// POST /api/energy/reading — ESP8266 pushes new reading (no auth)
+// POST /api/energy/reading — ESP8266 pushes new reading
+// Optionally accepts a userId in the body to associate readings with a specific user
 router.post('/reading', async (req, res) => {
   try {
-    const { voltage, current, power, energy, frequency } = req.body;
+    const { voltage, current, power, energy, frequency, userId } = req.body;
     if (voltage == null || current == null || power == null || energy == null || frequency == null) {
       return res.status(400).json({ error: 'voltage, current, power, energy, frequency are required' });
     }
-    const reading = await EnergyReading.create({ voltage, current, power, energy, frequency });
+    const reading = await EnergyReading.create({
+      voltage,
+      current,
+      power,
+      energy,
+      frequency,
+      userId: userId || null,
+    });
     res.status(201).json(reading);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/energy/realtime — latest energy reading
+// GET /api/energy/realtime — latest energy reading (per user)
 router.get('/realtime', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const reading = await EnergyReading.findOne({ $or: [{ userId }, { userId: null }] })
+    const reading = await EnergyReading.findOne({ userId })
       .sort({ timestamp: -1 })
       .lean();
     if (!reading) {
@@ -51,13 +59,13 @@ router.get('/realtime', auth, async (req, res) => {
   }
 });
 
-// GET /api/energy/history?range=daily|weekly|monthly
+// GET /api/energy/history?range=daily|weekly|monthly (per user)
 router.get('/history', auth, async (req, res) => {
   try {
     const range = req.query.range || 'daily';
     const userId = req.user.userId;
 
-    const match = { $or: [{ userId }, { userId: null }] };
+    const match = { userId };
     const now = new Date();
     let startDate;
 
@@ -134,12 +142,12 @@ router.get('/bill', auth, (req, res) => {
   res.json({ units, total: Math.round(total * 100) / 100 });
 });
 
-// GET /api/energy/history-raw — raw readings for charts (last N points)
+// GET /api/energy/history-raw — raw readings for charts (last N points, per user)
 router.get('/history-raw', auth, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
     const userId = req.user.userId;
-    const readings = await EnergyReading.find({ $or: [{ userId }, { userId: null }] })
+    const readings = await EnergyReading.find({ userId })
       .sort({ timestamp: -1 })
       .limit(limit)
       .lean();

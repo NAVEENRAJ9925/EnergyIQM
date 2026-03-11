@@ -14,9 +14,9 @@ const DEFAULT_DEVICES = [
 async function ensureDevices(userId) {
   for (const d of DEFAULT_DEVICES) {
     await Device.findOneAndUpdate(
-      { name: d.name, $or: [{ userId }, { userId: null }] },
+      { name: d.name, userId },
       { $setOnInsert: { name: d.name, isOn: d.isOn, userId } },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
   }
 }
@@ -25,16 +25,18 @@ async function ensureDevices(userId) {
 router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
-    let devices = await Device.find({ $or: [{ userId }, { userId: null }] }).lean();
+    let devices = await Device.find({ userId }).lean();
     if (devices.length === 0) {
       await ensureDevices(userId);
-      devices = await Device.find({ $or: [{ userId }, { userId: null }] }).lean();
+      devices = await Device.find({ userId }).lean();
     }
-    res.json(devices.map((d, i) => ({
-      id: d._id.toString(),
-      name: d.name,
-      isOn: d.isOn,
-    })));
+    res.json(
+      devices.map((d) => ({
+        id: d._id.toString(),
+        name: d.name,
+        isOn: d.isOn,
+      })),
+    );
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -48,7 +50,7 @@ router.post('/control', auth, async (req, res) => {
     if (!deviceName) return res.status(400).json({ error: 'device name is required' });
     const userId = req.user.userId;
 
-    let dev = await Device.findOne({ name: deviceName, $or: [{ userId }, { userId: null }] });
+    let dev = await Device.findOne({ name: deviceName, userId });
     if (!dev) {
       dev = await Device.create({ name: deviceName, isOn: state === true || state === 'ON', userId });
     } else {

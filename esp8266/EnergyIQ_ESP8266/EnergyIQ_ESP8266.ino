@@ -8,12 +8,14 @@
 #include <WiFiClient.h>
 #include <SoftwareSerial.h>
 #include <PZEM004Tv30.h>
+
 // ---- WiFi ----
 const char* ssid = "Hello";
 const char* password = "12345678";
 
 // ---- Backend (EnergyIQ Node.js API) ----
 const char* BACKEND_URL = "http://10.147.88.72:5000";  // Change to your backend IP/host
+const char* USER_ID = "PUT_MONGO_USER_ID_HERE";        // Replace with user _id from MongoDB
 #define PUSH_INTERVAL_MS 5000  // Push to backend every 5 seconds
 
 // ---- PZEM ----
@@ -51,7 +53,9 @@ void pushToBackend(float voltage, float current, float power, float energy, floa
   body += String(round(energy * 1000) / 1000.0, 3);
   body += ",\"frequency\":";
   body += String(round(frequency * 10) / 10.0, 1);
-  body += "}";
+  body += ",\"userId\":\"";
+  body += USER_ID;
+  body += "\"}";
 
   int code = http.POST(body);
   lastPushOk = (code >= 200 && code < 300);
