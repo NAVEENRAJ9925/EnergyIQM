@@ -25,7 +25,7 @@ function formatTimeAgo(date) {
 }
 
 async function generateAlerts(userId) {
-  const match = { $or: [{ userId: userId || null }, { userId: null }] };
+  const match = { userId: userId || null };
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfDay = new Date(now);

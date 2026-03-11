@@ -68,39 +68,47 @@ const AIInsights = () => {
     setError(null);
 
     const run = async () => {
-      const ML = import.meta.env.VITE_ML_URL || "http://localhost:5001";
-      const fetchDirect = async (path: string) => {
-  try {
-    const r = await fetch(`${ML}${path}`);
-    const d = await r.json().catch(() => ({}));
-    return r.ok ? d : null;
-  } catch {
-    return null;
-  }
-};
-      const results = await Promise.allSettled([
-        fetchDirect<{ predicted_units: number; confidence: number }>("/api/ml/predict-consumption"),
-        fetchDirect<{ predicted_units: number; estimated_bill: number }>("/api/ml/predict-bill"),
-        fetchDirect<{ peak_hours: string[]; avg_peak_power: number }>("/api/ml/peak-hours"),
-        fetchDirect<{ anomalies: { timestamp: string; power: number; expected: number; severity: string }[] }>("/api/ml/anomalies"),
-        fetchDirect<{ recommendations: { tip: string; potential_saving: string }[] }>("/api/ml/recommendations"),
-        fetchDirect<{ total_kwh: number; co2_kg: number; vs_regional_avg: string; pct_diff_from_avg: number }>("/api/ml/carbon-footprint"),
-      ]);
-      if (cancelled) return;
-      const [cons, b, peak, anom, rec, carb] = results.map((r) => (r.status === "fulfilled" ? r.value : null));
-      if (cons) setConsumption(cons);
-      if (b) setBill(b);
-      if (peak) setPeakHours(peak);
-      if (anom) setAnomalies(anom.anomalies || []);
-      if (rec) setRecommendations(rec.recommendations || []);
-      if (carb) setCarbon(carb);
-      if (!cons && !b && !peak && !anom && !rec && !carb) {
-        setError("Could not load any insights. Ensure ML service is running (npm run ml).");
+      try {
+        const results = await Promise.allSettled([
+          api.ml.predictConsumption(),
+          api.ml.predictBill(),
+          api.ml.peakHours(),
+          api.ml.anomalies(),
+          api.ml.recommendations(),
+          api.ml.carbonFootprint(),
+        ]);
+
+        if (cancelled) return;
+
+        const [cons, b, peak, anom, rec, carb] = results.map((r) =>
+          r.status === "fulfilled" ? r.value : null,
+        );
+
+        if (cons) setConsumption(cons);
+        if (b) setBill(b);
+        if (peak) setPeakHours(peak);
+        if (anom) setAnomalies(anom.anomalies || []);
+        if (rec) setRecommendations(rec.recommendations || []);
+        if (carb) setCarbon(carb);
+
+        if (!cons && !b && !peak && !anom && !rec && !carb) {
+          setError("Could not load any insights. Ensure backend and ML service are running.");
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(
+            e instanceof Error ? e.message : "Failed to load insights. Ensure backend and ML service are running.",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     };
+
     run();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (loading) {

@@ -18,7 +18,11 @@ def get_client():
 
 
 def get_readings(user_id: str = None, days: int = 90):
-    """Fetch energy readings from MongoDB. userId can be ObjectId string or None for global."""
+    """Fetch energy readings from MongoDB.
+
+    If user_id is provided, only that user's readings are returned.
+    If user_id is None, all readings are returned (global view).
+    """
     from datetime import datetime, timedelta
     client = get_client()
     db = client[DB_NAME]
@@ -26,6 +30,6 @@ def get_readings(user_id: str = None, days: int = 90):
     start = datetime.utcnow() - timedelta(days=days)
     query = {"timestamp": {"$gte": start}}
     if user_id:
-        query["$or"] = [{"userId": ObjectId(user_id)}, {"userId": None}]
+        query["userId"] = ObjectId(user_id)
     cursor = coll.find(query).sort("timestamp", 1)
     return list(cursor)
