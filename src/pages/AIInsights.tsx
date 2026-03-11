@@ -69,15 +69,15 @@ const AIInsights = () => {
 
     const run = async () => {
       const ML = import.meta.env.VITE_ML_URL || "http://localhost:5001";
-      const fetchDirect = async <T>(path: string): Promise<T | null> => {
-        try {
-          const r = await fetch(`${ML}${path}`);
-          const d = await r.json().catch(() => ({}));
-          return r.ok ? (d as T) : null;
-        } catch {
-          return null;
-        }
-      };
+      const fetchDirect = async (path: string) => {
+  try {
+    const r = await fetch(`${ML}${path}`);
+    const d = await r.json().catch(() => ({}));
+    return r.ok ? d : null;
+  } catch {
+    return null;
+  }
+};
       const results = await Promise.allSettled([
         fetchDirect<{ predicted_units: number; confidence: number }>("/api/ml/predict-consumption"),
         fetchDirect<{ predicted_units: number; estimated_bill: number }>("/api/ml/predict-bill"),
