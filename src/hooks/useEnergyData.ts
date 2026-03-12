@@ -2,28 +2,31 @@ import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 
 export interface EnergyReading {
-  timestamp: Date;
-  voltage: number;
-  current: number;
-  power: number;
-  energy: number;
-  frequency: number;
+  timestamp: Date | null;
+  voltage: number | null;
+  current: number | null;
+  power: number | null;
+  energy: number | null;
+  frequency: number | null;
+  live?: boolean;
 }
 
 const mapReading = (r: {
-  timestamp: string;
-  voltage: number;
-  current: number;
-  power: number;
-  energy: number;
-  frequency: number;
+  timestamp: string | null;
+  voltage: number | null;
+  current: number | null;
+  power: number | null;
+  energy: number | null;
+  frequency: number | null;
+  live?: boolean;
 }): EnergyReading => ({
-  timestamp: new Date(r.timestamp),
+  timestamp: r.timestamp ? new Date(r.timestamp) : null,
   voltage: r.voltage,
   current: r.current,
   power: r.power,
   energy: r.energy,
   frequency: r.frequency,
+  live: r.live,
 });
 
 const emptyDaily = () => {
@@ -46,12 +49,13 @@ const emptyMonthly = () => {
 
 export const useEnergyData = () => {
   const [realtime, setRealtime] = useState<EnergyReading>({
-    timestamp: new Date(),
-    voltage: 230,
-    current: 4.5,
-    power: 1035,
-    energy: 12.5,
-    frequency: 50,
+    timestamp: null,
+    voltage: null,
+    current: null,
+    power: null,
+    energy: null,
+    frequency: null,
+    live: false,
   });
 
   const [history, setHistory] = useState<EnergyReading[]>([]);

@@ -22,10 +22,12 @@ const Dashboard = () => {
     return () => clearInterval(id);
   }, []);
 
-  const lastTs = realtime?.timestamp ? realtime.timestamp.getTime() : 0;
-  const ageMs = Math.max(0, now - lastTs);
-  const ageSeconds = Math.floor(ageMs / 1000);
-  const isLive = ageMs <= 10_000;
+  const hasTimestamp = !!realtime?.timestamp;
+  const lastTs = hasTimestamp ? realtime!.timestamp!.getTime() : 0;
+  const ageMs = hasTimestamp ? Math.max(0, now - lastTs) : Number.POSITIVE_INFINITY;
+  const ageSeconds = hasTimestamp ? Math.floor(ageMs / 1000) : null;
+  const isLiveByTime = hasTimestamp && ageMs <= 10_000;
+  const isLive = realtime.live ?? isLiveByTime;
 
   const powerChartData = useMemo(() => {
     const last30 = history.slice(-30);

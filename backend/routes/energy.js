@@ -43,17 +43,19 @@ router.get('/realtime', auth, async (req, res) => {
       .sort({ timestamp: -1 })
       .lean();
     if (!reading) {
+      // No readings yet for this user: explicitly mark as not live / no data
       return res.json({
-        timestamp: new Date(),
-        voltage: 230,
-        current: 4.5,
-        power: 1035,
-        energy: 12.5,
-        frequency: 50,
+        timestamp: null,
+        voltage: null,
+        current: null,
+        power: null,
+        energy: null,
+        frequency: null,
+        live: false,
       });
     }
     reading.timestamp = reading.timestamp || reading.createdAt;
-    res.json(reading);
+    res.json({ ...reading, live: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
