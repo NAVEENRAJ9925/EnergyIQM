@@ -27,7 +27,8 @@ const Dashboard = () => {
   const ageMs = hasTimestamp ? Math.max(0, now - lastTs) : Number.POSITIVE_INFINITY;
   const ageSeconds = hasTimestamp ? Math.floor(ageMs / 1000) : null;
   const isLiveByTime = hasTimestamp && ageMs <= 10_000;
-  const isLive = realtime.live ?? isLiveByTime;
+  // Device LIVE is determined strictly by "freshness" of the last timestamp.
+  const isLive = isLiveByTime;
 
   const powerChartData = useMemo(() => {
     const last30 = history.slice(-30);

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 interface MetricCardProps {
   title: string;
-  value: string | number;
+  value: string | number | null;
   unit: string;
   type: "voltage" | "current" | "power" | "energy" | "frequency";
   status?: "live" | "disconnected";
