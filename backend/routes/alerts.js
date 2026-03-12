@@ -118,7 +118,7 @@ router.post('/send-email', auth, async (req, res) => {
     if (alerts.length === 0) {
       return res.json({ sent: false, message: 'No alerts to send' });
     }
-    const result = await sendAlertEmail(user.email, user.name || 'User', alerts);
+    const result = await sendAlertEmail("naveenraj9925@gmail.com", user.name || 'User', alerts);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
