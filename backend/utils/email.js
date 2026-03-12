@@ -51,7 +51,7 @@ h1{color:#16a34a;}
     : `EnergyIQ: ${alerts.length} Energy Alert(s)`;
 
   try {
-    const from = process.env.RESEND_FROM || process.env.SMTP_FROM || 'EnergyIQ <onboarding@resend.dev>';
+    const from ='EnergyIQ <onboarding@resend.dev>';
     await resend.emails.send({
       from,
       to,
