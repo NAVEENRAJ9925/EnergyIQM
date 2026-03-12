@@ -17,15 +17,21 @@ Edit in `EnergyIQ_ESP8266.ino`:
 const char* ssid = "YourWiFiSSID";
 const char* password = "YourWiFiPassword";
 const char* BACKEND_URL = "http://YOUR_BACKEND_IP:5000";  // Node.js API
+const char* USER_ID = "MongoDB user _id";                 // From users collection
+const char* DEVICE_API_KEY = "64-char hex key";           // From Profile > Generate device key
 ```
+
+1. Log in to the web app → **Profile** → **Generate device key** → copy the key.
+2. Paste into `DEVICE_API_KEY`.
 
 ## Behavior
 
-| Feature        | Details                                                                 |
-|----------------|-------------------------------------------------------------------------|
-| Local dashboard| `http://<ESP8266_IP>/` — live PZEM readings, relay toggle               |
-| Backend sync   | POST to `/api/energy/reading` every 5 seconds                           |
-| Relay          | Controlled locally from the ESP8266 dashboard (D1 pin)                  |
+| Feature           | Details                                                                 |
+|-------------------|-------------------------------------------------------------------------|
+| Local dashboard   | `http://<ESP8266_IP>/` — live PZEM readings, relay toggle               |
+| Backend sync      | POST to `/api/energy/reading` every 5 seconds                           |
+| Relay from web    | Device Control page (Light) controls the relay; ESP polls every 5 s     |
+| Relay from ESP UI | Local toggle also updates backend so web app stays in sync              |
 
 ## Backend
 

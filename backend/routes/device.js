@@ -1,6 +1,9 @@
 const express = require('express');
+const crypto = require('crypto');
 const Device = require('../models/Device');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
+const authOrDevice = require('../middleware/authDevice');
 
 const router = express.Router();
 
@@ -21,8 +24,20 @@ async function ensureDevices(userId) {
   }
 }
 
-// GET /api/device — list devices (for frontend sync)
-router.get('/', auth, async (req, res) => {
+// POST /api/device/generate-key — generate device API key for ESP (JWT auth only)
+router.post('/generate-key', auth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const deviceApiKey = crypto.randomBytes(32).toString('hex');
+    await User.findByIdAndUpdate(userId, { deviceApiKey });
+    res.json({ deviceApiKey });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/device — list devices (frontend JWT or ESP device key)
+router.get('/', authOrDevice, async (req, res) => {
   try {
     const userId = req.user.userId;
     let devices = await Device.find({ userId }).lean();
@@ -42,8 +57,8 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// POST /api/device/control — toggle device ON/OFF
-router.post('/control', auth, async (req, res) => {
+// POST /api/device/control — toggle device ON/OFF (web JWT or ESP device key)
+router.post('/control', authOrDevice, async (req, res) => {
   try {
     const { device, state } = req.body; // device: "Light" | "Motor" | "AC", state: true | false
     const deviceName = device || req.body.name;

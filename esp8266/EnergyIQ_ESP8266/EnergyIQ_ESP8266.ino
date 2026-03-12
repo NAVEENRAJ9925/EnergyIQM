@@ -16,7 +16,10 @@ const char* password = "12345678";
 // ---- Backend (EnergyIQ Node.js API) ----
 const char* BACKEND_URL = "http://10.147.88.72:5000";  // Change to your backend IP/host
 const char* USER_ID = "PUT_MONGO_USER_ID_HERE";        // Replace with user _id from MongoDB
-#define PUSH_INTERVAL_MS 5000  // Push to backend every 5 seconds
+const char* DEVICE_API_KEY = "PUT_DEVICE_API_KEY_HERE"; // From Profile > Generate device key
+#define RELAY_DEVICE_NAME "Light"  // Backend device that controls this relay
+#define PUSH_INTERVAL_MS 5000      // Push readings every 5 seconds
+#define DEVICE_POLL_MS 5000        // Sync relay from web app every 5 seconds
 
 // ---- PZEM ----
 #define PZEM_RX 14  // D5 -> PZEM TX
@@ -31,6 +34,7 @@ bool relayState = false;
 // ---- Web Server ----
 ESP8266WebServer server(80);
 unsigned long lastPush = 0;
+unsigned long lastDevicePoll = 0;
 bool lastPushOk = true;
 
 // ---- Push readings to EnergyIQ backend ----
@@ -63,6 +67,39 @@ void pushToBackend(float voltage, float current, float power, float energy, floa
 
   if (!lastPushOk) {
     Serial.printf("Backend push failed: %d\n", code);
+  }
+}
+
+// ---- Sync relay from web app device state (Option A: ESP polls backend) ----
+void syncRelayFromBackend() {
+  if (WiFi.status() != WL_CONNECTED) return;
+  if (strcmp(DEVICE_API_KEY, "PUT_DEVICE_API_KEY_HERE") == 0) return;  // Skip if not set
+
+  WiFiClient client;
+  HTTPClient http;
+  String url = String(BACKEND_URL) + "/api/device";
+  http.begin(client, url);
+  http.addHeader("Authorization", "Bearer " + String(DEVICE_API_KEY));
+
+  int code = http.GET();
+  if (code != 200) {
+    http.end();
+    return;
+  }
+  String payload = http.getString();
+  http.end();
+
+  // Find "name":"Light","isOn":true or "name":"Light","isOn":false
+  String needle = "\"name\":\"" + String(RELAY_DEVICE_NAME) + "\",\"isOn\":";
+  int idx = payload.indexOf(needle);
+  if (idx < 0) return;
+  idx += needle.length();
+  bool targetOn = (idx < (int)payload.length() && payload.charAt(idx) == 't');
+
+  if (relayState != targetOn) {
+    relayState = targetOn;
+    digitalWrite(RELAY_PIN, relayState ? LOW : HIGH);
+    Serial.printf("Relay synced to %s\n", relayState ? "ON" : "OFF");
   }
 }
 
@@ -251,6 +288,17 @@ void handleToggleRelay() {
   relayState = !relayState;
   digitalWrite(RELAY_PIN, relayState ? LOW : HIGH);
   server.send(200, "text/plain", "OK");
+
+  // Push new state to backend so web app stays in sync
+  if (WiFi.status() == WL_CONNECTED && strcmp(DEVICE_API_KEY, "PUT_DEVICE_API_KEY_HERE") != 0) {
+    WiFiClient c;
+    HTTPClient h;
+    h.begin(c, String(BACKEND_URL) + "/api/device/control");
+    h.addHeader("Content-Type", "application/json");
+    h.addHeader("Authorization", "Bearer " + String(DEVICE_API_KEY));
+    h.POST("{\"device\":\"" + String(RELAY_DEVICE_NAME) + "\",\"state\":" + (relayState ? "true" : "false") + "}");
+    h.end();
+  }
 }
 
 void setup() {
@@ -273,6 +321,12 @@ void setup() {
 
 void loop() {
   server.handleClient();
+
+  // Sync relay from web app every DEVICE_POLL_MS
+  if (millis() - lastDevicePoll >= DEVICE_POLL_MS) {
+    lastDevicePoll = millis();
+    syncRelayFromBackend();
+  }
 
   // Push to EnergyIQ backend every 5 seconds
   if (millis() - lastPush >= PUSH_INTERVAL_MS) {

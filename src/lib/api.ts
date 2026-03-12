@@ -66,6 +66,8 @@ export const api = {
   device: {
     list: () =>
       request<{ id: string; name: string; isOn: boolean }[]>("/device"),
+    generateKey: () =>
+      request<{ deviceApiKey: string }>("/device/generate-key", { method: "POST" }),
     control: (device: string, state: boolean | "ON" | "OFF") =>
       request<{ id: string; name: string; isOn: boolean }>("/device/control", {
         method: "POST",
