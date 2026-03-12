@@ -38,7 +38,7 @@ const MetricCard = ({ title, value, unit, type, status = "live", lastSeenSeconds
   const Icon = iconMap[type];
 
   const isLive = status === "live";
-  const displayValue = isLive ? value : "--";
+  const displayValue = isLive && value != null && value !== "" ? value : "--";
   const statusLabel = isLive ? "Live" : lastSeenSeconds != null ? `Disconnected · Last seen ${lastSeenSeconds}s ago` : "Disconnected";
 
   return (

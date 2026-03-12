@@ -31,9 +31,10 @@ const Dashboard = () => {
   const isLive = isLiveByTime;
 
   const powerChartData = useMemo(() => {
-    const last30 = history.slice(-30);
+    const valid = history.filter((r) => r.timestamp != null && r.power != null);
+    const last30 = valid.slice(-30);
     return {
-      labels: last30.map((r) => r.timestamp.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })),
+      labels: last30.map((r) => r.timestamp!.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })),
       datasets: [{
         label: "Power (W)",
         data: last30.map((r) => r.power),

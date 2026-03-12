@@ -36,11 +36,10 @@ const DeviceControl = () => {
   const [newAction, setNewAction] = useState<"ON" | "OFF">("ON");
 
   useEffect(() => {
-    let cancelled = false;
-    api.device
-      .list()
-      .then((data) => {
-        if (!cancelled) {
+    const load = () => {
+      api.device.list()
+        .then((data) => {
+          setError(null);
           setDevices(
             data.length > 0
               ? data.map((d) => ({ ...d, icon: iconMap[d.name] || Lightbulb }))
@@ -50,22 +49,20 @@ const DeviceControl = () => {
                   { id: "3", name: "AC", isOn: false },
                 ]
           );
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
+        })
+        .catch((err) => {
           setError(err.message);
           setDevices([
             { id: "1", name: "Light", isOn: true },
             { id: "2", name: "Motor", isOn: false },
             { id: "3", name: "AC", isOn: false },
           ]);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
+        });
+    };
+    load();
+    setLoading(false);
+    const id = setInterval(load, 5000);
+    return () => clearInterval(id);
   }, []);
 
   const toggleDevice = async (id: string) => {
