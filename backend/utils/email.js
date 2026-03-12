@@ -1,26 +1,22 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-let transporter = null;
+let resendClient = null;
 
-function getTransporter() {
-  if (transporter) return transporter;
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const secure = process.env.SMTP_SECURE === 'true';
-  if (!host || !user || !pass) {
+function getResend() {
+  if (resendClient) return resendClient;
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('Resend not configured (RESEND_API_KEY missing). Skipping send.');
     return null;
   }
-  transporter = nodemailer.createTransport({ host, port, secure, auth: { user, pass } });
-  return transporter;
+  resendClient = new Resend(apiKey);
+  return resendClient;
 }
 
 async function sendAlertEmail(to, name, alerts) {
-  const trans = getTransporter();
-  if (!trans) {
-    console.warn('Email not configured (SMTP_* env vars). Skipping send.');
-    return { sent: false, reason: 'SMTP not configured' };
+  const resend = getResend();
+  if (!resend) {
+    return { sent: false, reason: 'Email service not configured' };
   }
   const critical = alerts.filter(a => a.type === 'critical');
   const warning = alerts.filter(a => a.type === 'warning');
@@ -55,8 +51,9 @@ h1{color:#16a34a;}
     : `EnergyIQ: ${alerts.length} Energy Alert(s)`;
 
   try {
-    await trans.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    const from = process.env.RESEND_FROM || process.env.SMTP_FROM || 'EnergyIQ <onboarding@resend.dev>';
+    await resend.emails.send({
+      from,
       to,
       subject,
       html,
@@ -71,4 +68,4 @@ h1{color:#16a34a;}
   }
 }
 
-module.exports = { sendAlertEmail, getTransporter };
+module.exports = { sendAlertEmail, getResend };
