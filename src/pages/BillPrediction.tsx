@@ -114,6 +114,36 @@ const BillPrediction = () => {
         </p>
       </div>
 
+      {/* Fixed model prediction overview */}
+      {mlData && (
+        <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold text-energy-green uppercase tracking-wide mb-1">
+                Model prediction
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Based on your last 90 days of usage.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-6">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Predicted units</p>
+                <p className="text-2xl font-bold font-mono text-card-foreground">
+                  {mlData.predicted_units.toFixed(1)} <span className="text-sm text-muted-foreground">kWh</span>
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Predicted bill</p>
+                <p className="text-2xl font-bold font-mono text-card-foreground">
+                  ₹{mlData.estimated_bill.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Slider - explore different unit values */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
         <label className="text-sm font-medium text-card-foreground block mb-2">
