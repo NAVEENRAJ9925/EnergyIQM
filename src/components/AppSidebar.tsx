@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, BarChart3, Receipt, Brain, Bell, User, LogOut, Zap, ChevronLeft, ChevronRight,
+  LayoutDashboard, BarChart3, Receipt, Brain, Bell, User, LogOut, Zap, ChevronLeft, ChevronRight, Plug,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,7 @@ const navItems = [
   { title: "Bill Prediction", url: "/bill", icon: Receipt },
   { title: "AI Insights", url: "/insights", icon: Brain },
   { title: "Alerts", url: "/alerts", icon: Bell },
+  { title: "Device Control", url: "/devices", icon: Plug },
   { title: "Profile", url: "/profile", icon: User },
 ];
 

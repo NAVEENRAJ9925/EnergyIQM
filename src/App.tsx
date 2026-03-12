@@ -13,6 +13,7 @@ import EnergyUsage from "./pages/EnergyUsage";
 import BillPrediction from "./pages/BillPrediction";
 import AIInsights from "./pages/AIInsights";
 import Alerts from "./pages/Alerts";
+import DeviceControl from "./pages/DeviceControl";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/bill" element={<BillPrediction />} />
               <Route path="/insights" element={<AIInsights />} />
               <Route path="/alerts" element={<Alerts />} />
+              <Route path="/devices" element={<DeviceControl />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
             <Route path="*" element={<NotFound />} />
