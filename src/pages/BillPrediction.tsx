@@ -46,15 +46,11 @@ const BillPrediction = () => {
           setMlData(data);
           setUnits(data.predicted_units);
         }
-      } catch {
-        try {
-          const data = await api.ml.predictBillDirect();
-          if (!cancelled) {
-            setMlData(data);
-            setUnits(data.predicted_units);
-          }
-        } catch (err) {
-          if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load");
+      } catch (err) {
+        if (!cancelled) {
+          setMlData(null);
+          setUnits(0);
+          setError(err instanceof Error ? err.message : "Failed to load");
         }
       } finally {
         if (!cancelled) setLoading(false);
