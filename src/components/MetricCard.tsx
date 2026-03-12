@@ -6,6 +6,8 @@ interface MetricCardProps {
   value: string | number;
   unit: string;
   type: "voltage" | "current" | "power" | "energy" | "frequency";
+  status?: "live" | "disconnected";
+  lastSeenSeconds?: number | null;
 }
 
 const iconMap = {
@@ -32,8 +34,12 @@ const bgMap = {
   frequency: "bg-energy-purple/10",
 };
 
-const MetricCard = ({ title, value, unit, type }: MetricCardProps) => {
+const MetricCard = ({ title, value, unit, type, status = "live", lastSeenSeconds }: MetricCardProps) => {
   const Icon = iconMap[type];
+
+  const isLive = status === "live";
+  const displayValue = isLive ? value : "--";
+  const statusLabel = isLive ? "Live" : lastSeenSeconds != null ? `Disconnected · Last seen ${lastSeenSeconds}s ago` : "Disconnected";
 
   return (
     <motion.div
@@ -48,12 +54,16 @@ const MetricCard = ({ title, value, unit, type }: MetricCardProps) => {
         </div>
       </div>
       <div className="flex items-baseline gap-1">
-        <span className="text-2xl font-bold text-card-foreground font-mono">{value}</span>
+        <span className="text-2xl font-bold text-card-foreground font-mono">{displayValue}</span>
         <span className="text-sm text-muted-foreground">{unit}</span>
       </div>
       <div className="mt-2 flex items-center gap-1">
-        <div className={`h-1.5 w-1.5 rounded-full ${colorMap[type].replace("text-", "bg-")} animate-pulse-glow`} />
-        <span className="text-xs text-muted-foreground">Live</span>
+        <div
+          className={`h-1.5 w-1.5 rounded-full ${
+            isLive ? colorMap[type].replace("text-", "bg-") : "bg-slate-500"
+          } ${isLive ? "animate-pulse-glow" : ""}`}
+        />
+        <span className="text-xs text-muted-foreground">{statusLabel}</span>
       </div>
     </motion.div>
   );

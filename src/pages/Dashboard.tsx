@@ -13,6 +13,12 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 const Dashboard = () => {
   const { realtime, history, getDailyEnergy, getMonthlyEnergy } = useEnergyData();
 
+  const now = Date.now();
+  const lastTs = realtime?.timestamp ? realtime.timestamp.getTime() : 0;
+  const ageMs = Math.max(0, now - lastTs);
+  const ageSeconds = Math.floor(ageMs / 1000);
+  const isLive = ageMs <= 10_000;
+
   const powerChartData = useMemo(() => {
     const last30 = history.slice(-30);
     return {
@@ -87,11 +93,46 @@ const Dashboard = () => {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <MetricCard title="Voltage" value={realtime.voltage} unit="V" type="voltage" />
-        <MetricCard title="Current" value={realtime.current} unit="A" type="current" />
-        <MetricCard title="Power" value={realtime.power} unit="W" type="power" />
-        <MetricCard title="Energy" value={realtime.energy} unit="kWh" type="energy" />
-        <MetricCard title="Frequency" value={realtime.frequency} unit="Hz" type="frequency" />
+        <MetricCard
+          title="Voltage"
+          value={realtime.voltage}
+          unit="V"
+          type="voltage"
+          status={isLive ? "live" : "disconnected"}
+          lastSeenSeconds={isLive ? null : ageSeconds}
+        />
+        <MetricCard
+          title="Current"
+          value={realtime.current}
+          unit="A"
+          type="current"
+          status={isLive ? "live" : "disconnected"}
+          lastSeenSeconds={isLive ? null : ageSeconds}
+        />
+        <MetricCard
+          title="Power"
+          value={realtime.power}
+          unit="W"
+          type="power"
+          status={isLive ? "live" : "disconnected"}
+          lastSeenSeconds={isLive ? null : ageSeconds}
+        />
+        <MetricCard
+          title="Energy"
+          value={realtime.energy}
+          unit="kWh"
+          type="energy"
+          status={isLive ? "live" : "disconnected"}
+          lastSeenSeconds={isLive ? null : ageSeconds}
+        />
+        <MetricCard
+          title="Frequency"
+          value={realtime.frequency}
+          unit="Hz"
+          type="frequency"
+          status={isLive ? "live" : "disconnected"}
+          lastSeenSeconds={isLive ? null : ageSeconds}
+        />
       </div>
 
       {/* Charts */}
