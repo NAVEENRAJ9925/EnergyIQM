@@ -114,30 +114,54 @@ const BillPrediction = () => {
         </p>
       </div>
 
-      {/* Fixed model prediction overview */}
+      {/* Fixed model prediction with diagrammatic bars */}
       {mlData && (
         <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <p className="text-xs font-semibold text-energy-green uppercase tracking-wide mb-1">
+            Model prediction
+          </p>
+          <p className="text-sm text-muted-foreground mb-5">
+            Based on your last 90 days of usage.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <p className="text-xs font-semibold text-energy-green uppercase tracking-wide mb-1">
-                Model prediction
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Based on your last 90 days of usage.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-6">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Predicted units</p>
-                <p className="text-2xl font-bold font-mono text-card-foreground">
-                  {mlData.predicted_units.toFixed(1)} <span className="text-sm text-muted-foreground">kWh</span>
-                </p>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs text-muted-foreground">Predicted units</span>
+                <span className="text-lg font-bold font-mono text-primary">
+                  {mlData.predicted_units.toFixed(1)} kWh
+                </span>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Predicted bill</p>
-                <p className="text-2xl font-bold font-mono text-card-foreground">
+              <div className="h-3 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-300"
+                  style={{
+                    width: `${Math.min(100, (mlData.predicted_units / 1000) * 100)}%`,
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[10px] text-muted-foreground">0 kWh</span>
+                <span className="text-[10px] text-muted-foreground">1000 kWh</span>
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs text-muted-foreground">Predicted bill</span>
+                <span className="text-lg font-bold font-mono text-primary">
                   ₹{mlData.estimated_bill.toFixed(2)}
-                </p>
+                </span>
+              </div>
+              <div className="h-3 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-300"
+                  style={{
+                    width: `${Math.min(100, (mlData.estimated_bill / 5000) * 100)}%`,
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[10px] text-muted-foreground">₹0</span>
+                <span className="text-[10px] text-muted-foreground">₹5000</span>
               </div>
             </div>
           </div>
