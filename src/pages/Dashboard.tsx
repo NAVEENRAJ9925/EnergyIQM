@@ -5,7 +5,7 @@ import {
 } from "chart.js";
 import MetricCard from "@/components/MetricCard";
 import { useEnergyData } from "@/hooks/useEnergyData";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
@@ -13,7 +13,15 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarEleme
 const Dashboard = () => {
   const { realtime, history, getDailyEnergy, getMonthlyEnergy } = useEnergyData();
 
-  const now = Date.now();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const lastTs = realtime?.timestamp ? realtime.timestamp.getTime() : 0;
   const ageMs = Math.max(0, now - lastTs);
   const ageSeconds = Math.floor(ageMs / 1000);
