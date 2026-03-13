@@ -160,15 +160,8 @@ const Dashboard = () => {
       {/* Enhanced Header */}
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div className="space-y-4">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 text-emerald-300 text-[12px] font-semibold tracking-wide"
-          >
-            <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 animate-pulse-glow shadow-neon" />
-            <span>LIVE IOT ENERGY STREAM</span>
-            <Sparkles className="h-3 w-3 animate-pulse-slow" />
-          </motion.div>
+          
+          
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

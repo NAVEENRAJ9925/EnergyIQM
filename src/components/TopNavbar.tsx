@@ -33,25 +33,18 @@ const TopNavbar = () => {
       className="h-16 flex items-center justify-between px-8 shrink-0 border-b border-border/50 bg-card/90 dark:border-white/10 dark:bg-gradient-to-r dark:from-slate-950/90 dark:via-slate-900/85 dark:to-slate-950/90 backdrop-blur-2xl transition-all duration-500"
     >
       <motion.div 
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.1 }}
-        className="space-y-1"
-      >
-        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20">
-          <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 animate-pulse-glow shadow-neon" />
-          <span className="text-[12px] font-black uppercase tracking-[0.2em] text-emerald-300/90 flex items-center gap-2">
-            <Sparkles className="h-3 w-3 animate-pulse-slow" />
-            EnergyIQ Console
-          </span>
-        </div>
-        <h2 className="text-base font-bold text-foreground">
-          Welcome back,
-          <span className="ml-2 bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent font-black">
-            {user?.name || "User"}
-          </span>
-        </h2>
-      </motion.div>
+  initial={{ opacity: 0, x: -20 }}
+  animate={{ opacity: 1, x: 0 }}
+  transition={{ delay: 0.1 }}
+  className="space-y-1"
+>
+  <h1 className="text-3xl font-bold text-foreground">
+    Welcome back,
+    <span className="ml-2 bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent font-black">
+      {user?.name || "User"}
+    </span>
+  </h1>
+</motion.div>
       
       <motion.div 
         initial={{ opacity: 0, x: 20 }}
