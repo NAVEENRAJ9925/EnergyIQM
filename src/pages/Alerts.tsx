@@ -3,9 +3,6 @@ import { AlertTriangle, Zap, Clock, TrendingUp, Loader2, Mail, X } from "lucide-
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { PageHeader } from "@/components/PageHeader";
-import { AnalyticsCard } from "@/components/AnalyticsCard";
-import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 
 const iconMap: Record<string, typeof Zap> = {
   Zap,
@@ -80,22 +77,12 @@ const Alerts = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader
-          title="Alerts"
-          description="Unusual electricity consumption notifications"
-          eyebrow={
-            <span className="inline-flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-rose-600 dark:text-rose-200">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-400 animate-pulse-glow" />
-              ALERT CENTER
-            </span>
-          }
-        />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <AnalyticsCard key={i} accent={i % 2 ? "rose" : "amber"}>
-              <LoadingSkeleton lines={4} />
-            </AnalyticsCard>
-          ))}
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Alerts</h1>
+          <p className="text-sm text-muted-foreground">Unusual electricity consumption notifications</p>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
       </div>
     );
@@ -176,45 +163,45 @@ const Alerts = () => {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        eyebrow={
-          <span className="inline-flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-rose-600 dark:text-rose-200">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-300 text-[11px] font-medium mb-3">
             <span className="h-1.5 w-1.5 rounded-full bg-rose-400 animate-pulse-glow" />
             ALERT CENTER
-          </span>
-        }
-        title="Smart"
-        titleAccent={
-          <span className="bg-gradient-to-r from-rose-500 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
-            Alerts &amp; Anomalies
-          </span>
-        }
-        description="ML-powered notifications for unusual usage, bill forecasts, and carbon footprint."
-        right={
-          <div className="flex items-center gap-2">
-            {criticalCount > 0 && (
-              <span className="px-3 py-1 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-200 text-xs font-semibold border border-rose-500/30">
-                {criticalCount} Critical
-              </span>
-            )}
-            <button
-              onClick={handleClearAlerts}
-              disabled={clearing || alerts.length === 0}
-              className="px-4 py-2 rounded-xl border border-border bg-card/60 text-xs sm:text-sm text-foreground hover:bg-card transition-colors disabled:opacity-50"
-            >
-              {clearing ? "Clearing…" : "Clear alerts"}
-            </button>
-            <button
-              onClick={handleSendEmail}
-              disabled={sending || alerts.length === 0}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-400 via-sky-400 to-cyan-300 text-slate-950 text-sm font-semibold flex items-center gap-2 disabled:opacity-40 shadow-[0_10px_30px_rgba(56,189,248,0.35)] hover:shadow-[0_14px_40px_rgba(56,189,248,0.45)] transition-shadow"
-            >
-              <Mail className="h-4 w-4" />
-              {sending ? "Sending…" : "Send to email"}
-            </button>
           </div>
-        }
-      />
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+            Smart{" "}
+            <span className="bg-gradient-to-r from-rose-500 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
+              Alerts &amp; Anomalies
+            </span>
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            ML-powered notifications for unusual usage, bill forecasts, and carbon footprint.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {criticalCount > 0 && (
+            <span className="px-3 py-1 rounded-full bg-rose-500/15 text-rose-300 text-xs font-semibold border border-rose-500/40">
+              {criticalCount} Critical
+            </span>
+          )}
+          <button
+            onClick={handleClearAlerts}
+            disabled={clearing || alerts.length === 0}
+            className="px-4 py-2 rounded-lg border border-slate-700/80 bg-slate-950/70 text-xs sm:text-sm text-slate-300 hover:bg-slate-800/80 hover:text-slate-100 transition-colors disabled:opacity-50"
+          >
+            {clearing ? "Clearing…" : "Clear alerts"}
+          </button>
+          <button
+            onClick={handleSendEmail}
+            disabled={sending || alerts.length === 0}
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-400 via-sky-400 to-cyan-300 text-slate-950 text-sm font-medium flex items-center gap-2 disabled:opacity-40 shadow-[0_10px_30px_rgba(56,189,248,0.5)]"
+          >
+            <Mail className="h-4 w-4" />
+            {sending ? "Sending…" : "Send to email"}
+          </button>
+        </div>
+      </div>
 
       {error && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">

@@ -7,8 +7,6 @@ import MetricCard from "@/components/MetricCard";
 import { useEnergyData } from "@/hooks/useEnergyData";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ChartCard } from "@/components/ChartCard";
-import { StatusBadge } from "@/components/StatusBadge";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
@@ -160,23 +158,14 @@ const Dashboard = () => {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-emerald-600 dark:text-emerald-200">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-glow" />
-              LIVE IOT ENERGY STREAM
-            </span>
-            <StatusBadge
-              status={isLive ? "online" : "offline"}
-              label={isLive ? "Online" : ageSeconds != null ? `Offline · ${ageSeconds}s` : "Offline"}
-            />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 text-[11px] font-medium mb-3">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-glow" />
+            LIVE IOT ENERGY STREAM
           </div>
-          <h1 className="t-page-title text-foreground">
-            Smart Energy{" "}
-            <span className="bg-gradient-to-r from-emerald-400 via-sky-400 to-cyan-300 bg-clip-text text-transparent">
-              Dashboard
-            </span>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-50">
+            Smart Energy <span className="bg-gradient-to-r from-emerald-400 via-sky-400 to-cyan-300 bg-clip-text text-transparent">Dashboard</span>
           </h1>
-          <p className="mt-2 t-body text-muted-foreground">
+          <p className="mt-2 text-sm text-slate-400">
             Real-time monitoring from ESP8266 + PZEM-004T with intelligent trends and insights.
           </p>
         </div>
@@ -233,24 +222,47 @@ const Dashboard = () => {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <ChartCard title="Power vs Time" subtitle="Real-time stream (last 30 points)" accent="emerald">
-            {powerChartData.labels.length === 0 ? (
-              <div className="h-full rounded-xl bg-muted/40 border border-border animate-pulse" />
-            ) : (
-              <Line data={powerChartData} options={chartOptions} />
-            )}
-          </ChartCard>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="relative rounded-2xl border border-white/5 bg-slate-950/60 shadow-[0_18px_45px_rgba(15,23,42,0.85)] overflow-hidden"
+        >
+          <div className="pointer-events-none absolute inset-x-12 -top-24 h-44 bg-gradient-to-b from-emerald-500/15 via-transparent to-transparent blur-3xl" />
+          <div className="relative p-5 sm:p-6">
+            <h3 className="text-sm font-semibold text-slate-100 mb-4 flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Power vs Time (Real-time)
+            </h3>
+            <div className="h-64">
+              {powerChartData.labels.length === 0 ? (
+                <div className="h-full rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+              ) : (
+                <Line data={powerChartData} options={chartOptions} />
+              )}
+            </div>
+          </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.05 }}>
-          <ChartCard title="Daily energy consumption" subtitle="Last 7 days" accent="sky">
-            {dailyData.labels.length === 0 ? (
-              <div className="h-full rounded-xl bg-muted/40 border border-border animate-pulse" />
-            ) : (
-              <Bar data={dailyData} options={chartOptions} />
-            )}
-          </ChartCard>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.05 }}
+          className="relative rounded-2xl border border-white/5 bg-slate-950/60 shadow-[0_18px_45px_rgba(15,23,42,0.85)] overflow-hidden"
+        >
+          <div className="pointer-events-none absolute inset-x-10 -top-24 h-44 bg-gradient-to-b from-sky-500/18 via-transparent to-transparent blur-3xl" />
+          <div className="relative p-5 sm:p-6">
+            <h3 className="text-sm font-semibold text-slate-100 mb-4">
+              Daily Energy Consumption
+            </h3>
+            <div className="h-64">
+              {dailyData.labels.length === 0 ? (
+                <div className="h-full rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+              ) : (
+                <Bar data={dailyData} options={chartOptions} />
+              )}
+            </div>
+          </div>
         </motion.div>
       </div>
 
@@ -258,14 +270,21 @@ const Dashboard = () => {
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.08 }}
+        className="relative rounded-2xl border border-white/5 bg-slate-950/60 shadow-[0_18px_45px_rgba(15,23,42,0.9)] overflow-hidden"
       >
-        <ChartCard title="Monthly energy consumption" subtitle="Year-to-date" accent="amber" className="h-auto">
-          {monthlyData.labels.length === 0 ? (
-            <div className="h-full rounded-xl bg-muted/40 border border-border animate-pulse" />
-          ) : (
-            <Line data={monthlyData} options={chartOptions} />
-          )}
-        </ChartCard>
+        <div className="pointer-events-none absolute inset-x-24 -top-24 h-44 bg-gradient-to-b from-amber-400/16 via-transparent to-transparent blur-3xl" />
+        <div className="relative p-5 sm:p-6">
+          <h3 className="text-sm font-semibold text-slate-100 mb-4">
+            Monthly Energy Consumption
+          </h3>
+          <div className="h-64">
+            {monthlyData.labels.length === 0 ? (
+              <div className="h-full rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+            ) : (
+              <Line data={monthlyData} options={chartOptions} />
+            )}
+          </div>
+        </div>
       </motion.div>
     </div>
   );

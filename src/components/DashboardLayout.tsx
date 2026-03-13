@@ -1,22 +1,23 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
+import AppSidebar from "@/components/AppSidebar";
+import TopNavbar from "@/components/TopNavbar";
 
 const DashboardLayout = () => {
   return (
-    <div className="min-h-screen w-full bg-background relative overflow-hidden transition-colors">
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors">
+      {/* Animated background glows (dark mode only to keep light theme clean/readable) */}
       <div className="pointer-events-none absolute inset-0 hidden dark:block">
-        <div className="absolute -top-36 -left-36 h-80 w-80 rounded-full bg-emerald-500/14 blur-3xl animate-pulse" />
-        <div className="absolute top-1/3 -right-48 h-96 w-96 rounded-full bg-sky-500/12 blur-3xl animate-pulse" />
-        <div className="absolute bottom-[-120px] left-1/2 h-72 w-[560px] -translate-x-1/2 rounded-[999px] bg-gradient-to-r from-emerald-500/10 via-teal-400/8 to-sky-500/10 blur-3xl" />
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-emerald-500/18 blur-3xl animate-pulse-slow" />
+        <div className="absolute top-1/3 -right-40 h-80 w-80 rounded-full bg-sky-500/14 blur-3xl animate-pulse-slower" />
+        <div className="absolute bottom-[-120px] left-1/2 h-72 w-[520px] -translate-x-1/2 rounded-[999px] bg-gradient-to-r from-emerald-500/14 via-teal-400/10 to-sky-500/14 blur-3xl" />
       </div>
 
       <div className="relative z-10 flex min-h-screen w-full">
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Header />
-          <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-            <div className="h-full rounded-2xl border border-border bg-card/55 shadow-card backdrop-blur-xl transition-colors dark:border-white/6 dark:bg-slate-950/35">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <TopNavbar />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
+            <div className="h-full rounded-2xl border border-border bg-card/80 dark:border-white/5 dark:bg-gradient-to-br dark:from-slate-950/80 dark:via-slate-900/80 dark:to-slate-950/80 shadow-sm dark:shadow-[0_18px_45px_rgba(15,23,42,0.8)] backdrop-blur-xl transition-colors">
               <div className="h-full p-4 sm:p-6 lg:p-8">
                 <Outlet />
               </div>

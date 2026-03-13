@@ -57,18 +57,6 @@
     /* Slightly more premium elevation in light mode */
     --shadow-card: 0 1px 2px hsl(220 25% 10% / 0.05), 0 8px 24px hsl(220 25% 10% / 0.06);
     --shadow-card-hover: 0 2px 6px hsl(220 25% 10% / 0.08), 0 16px 40px hsl(220 25% 10% / 0.10);
-
-    /* EnergyIQ required design system variables (light) */
-    --bg-primary: #F6F8FB;
-    --bg-secondary: #EEF2F8;
-    --bg-card: #FFFFFF;
-    --text-primary: #0B1220;
-    --text-secondary: rgba(11, 18, 32, 0.68);
-    --accent-primary: #10B981;
-    --accent-secondary: #22D3EE;
-    --success: #10B981;
-    --warning: #F59E0B;
-    --danger: #EF4444;
   }
 
   .dark {
@@ -121,18 +109,6 @@
     --gradient-card: linear-gradient(135deg, hsl(222 25% 10%), hsl(222 22% 13%));
     --shadow-card: 0 10px 30px hsl(0 0% 0% / 0.35);
     --shadow-card-hover: 0 18px 55px hsl(0 0% 0% / 0.45);
-
-    /* EnergyIQ required design system variables (dark) */
-    --bg-primary: #0B1220;
-    --bg-secondary: #0E1728;
-    --bg-card: rgba(18, 28, 48, 0.68);
-    --text-primary: rgba(238, 242, 255, 0.94);
-    --text-secondary: rgba(148, 163, 184, 0.80);
-    --accent-primary: #2DD4BF;
-    --accent-secondary: #60A5FA;
-    --success: #34D399;
-    --warning: #FBBF24;
-    --danger: #FB7185;
   }
 }
 
@@ -147,12 +123,6 @@
   /* Smooth theme switch without feeling sluggish */
   html, body {
     transition: background-color 220ms ease, color 220ms ease;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    html, body {
-      transition: none;
-    }
   }
 }
 
@@ -177,15 +147,4 @@
   .card-sheen {
     background: linear-gradient(135deg, hsl(var(--card) / 0.92), hsl(var(--card) / 0.72));
   }
-
-  /* Typography scale (requested hierarchy) */
-  .t-page-title { font-size: 32px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700; }
-  .t-section-title { font-size: 20px; line-height: 1.25; letter-spacing: -0.01em; font-weight: 650; }
-  .t-card-value { font-size: 28px; line-height: 1.1; letter-spacing: -0.02em; font-weight: 700; }
-  .t-body { font-size: 14px; line-height: 1.5; }
-  .t-label { font-size: 12px; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
-
-  /* Premium interactions */
-  .hover-lift { transition: transform 220ms ease, box-shadow 220ms ease; }
-  .hover-lift:hover { transform: translateY(-2px); }
 }
