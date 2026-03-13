@@ -93,8 +93,8 @@ const EnergyUsage = () => {
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all border ${
               filter === f
-                ? "border-transparent bg-gradient-to-r from-sky-400 via-emerald-400 to-cyan-300 text-slate-950 shadow-[0_10px_30px_rgba(56,189,248,0.5)]"
-                : "border-slate-700/80 bg-slate-900/70 text-slate-300 hover:border-sky-400/60 hover:text-sky-200"
+                ? "border-transparent bg-gradient-to-r from-sky-400 via-emerald-400 to-cyan-300 text-slate-950 shadow-[0_10px_30px_rgba(56,189,248,0.35)]"
+                : "border-border bg-card text-foreground/80 hover:bg-muted hover:text-foreground"
             }`}
           >
             {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -108,9 +108,9 @@ const EnergyUsage = () => {
         transition={{ duration: 0.45 }}
         className="relative rounded-2xl border border-border bg-card shadow-card overflow-hidden dark:border-white/5 dark:bg-slate-950/60 dark:shadow-[0_18px_45px_rgba(15,23,42,0.85)]"
       >
-        <div className="pointer-events-none absolute inset-x-16 -top-24 h-44 bg-gradient-to-b from-sky-500/16 via-transparent to-transparent blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-16 -top-24 h-44 bg-gradient-to-b from-sky-500/12 via-transparent to-transparent blur-3xl" />
         <div className="relative p-5 sm:p-6">
-          <h3 className="text-sm font-semibold text-slate-100 mb-4">
+          <h3 className="text-sm font-semibold text-foreground mb-4">
             {filter === "day" ? "Daily" : filter === "week" ? "Weekly" : "Monthly"} Energy Consumption
           </h3>
           <div className="h-80">
@@ -133,10 +133,10 @@ const EnergyUsage = () => {
         >
           <div className="pointer-events-none absolute inset-x-6 -top-10 h-24 bg-gradient-to-b from-emerald-400/20 via-transparent to-transparent blur-2xl" />
           <div className="relative">
-            <p className="text-sm text-slate-400">Total Consumption</p>
-            <p className="text-2xl font-bold text-slate-50 font-mono mt-1">
+            <p className="text-sm text-muted-foreground">Total Consumption</p>
+            <p className="text-2xl font-bold text-foreground font-mono mt-1">
               {total.toFixed(1)}{" "}
-              <span className="text-sm font-normal text-slate-400">kWh</span>
+              <span className="text-sm font-normal text-muted-foreground">kWh</span>
             </p>
           </div>
         </motion.div>
@@ -148,10 +148,10 @@ const EnergyUsage = () => {
         >
           <div className="pointer-events-none absolute inset-x-6 -top-10 h-24 bg-gradient-to-b from-sky-400/20 via-transparent to-transparent blur-2xl" />
           <div className="relative">
-            <p className="text-sm text-slate-400">Average</p>
-            <p className="text-2xl font-bold text-slate-50 font-mono mt-1">
+            <p className="text-sm text-muted-foreground">Average</p>
+            <p className="text-2xl font-bold text-foreground font-mono mt-1">
               {avg.toFixed(1)}{" "}
-              <span className="text-sm font-normal text-slate-400">kWh</span>
+              <span className="text-sm font-normal text-muted-foreground">kWh</span>
             </p>
           </div>
         </motion.div>
@@ -163,10 +163,10 @@ const EnergyUsage = () => {
         >
           <div className="pointer-events-none absolute inset-x-6 -top-10 h-24 bg-gradient-to-b from-amber-400/20 via-transparent to-transparent blur-2xl" />
           <div className="relative">
-            <p className="text-sm text-slate-400">Peak Usage</p>
-            <p className="text-2xl font-bold text-slate-50 font-mono mt-1">
+            <p className="text-sm text-muted-foreground">Peak Usage</p>
+            <p className="text-2xl font-bold text-foreground font-mono mt-1">
               {peak.toFixed(1)}{" "}
-              <span className="text-sm font-normal text-slate-400">kWh</span>
+              <span className="text-sm font-normal text-muted-foreground">kWh</span>
             </p>
           </div>
         </motion.div>

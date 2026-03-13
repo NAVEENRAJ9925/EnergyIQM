@@ -23,7 +23,8 @@
     --secondary-foreground: 0 0% 12%;
 
     --muted: 210 15% 94%;
-    --muted-foreground: 0 0% 25%;
+    /* Boost contrast: avoid "faded" text in light mode */
+    --muted-foreground: 0 0% 32%;
 
     --accent: 199 85% 52%;
     --accent-foreground: 0 0% 100%;
@@ -31,8 +32,8 @@
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 15% 88%;
-    --input: 210 15% 88%;
+    --border: 210 15% 84%;
+    --input: 210 15% 84%;
     --ring: 142 70% 45%;
     --radius: 0.875rem;
 
@@ -66,11 +67,23 @@
     --shadow-card-hover: 0 2px 8px hsl(0 0% 0% / 0.12), 0 16px 40px hsl(0 0% 0% / 0.15), 0 24px 64px hsl(0 0% 0% / 0.1);
     --shadow-glass: 0 4px 20px hsl(0 0% 0% / 0.08), inset 0 1px 0 hsla(255, 255, 255, 0.9);
     --shadow-neon: 0 0 20px hsl(var(--energy-green) / 0.3), 0 0 40px hsl(var(--energy-green) / 0.15);
+
+    /* EnergyIQ required design system variables (light) */
+    --bg-primary: #F6F8FB;
+    --bg-secondary: #EEF2F8;
+    --bg-card: #FFFFFF;
+    --text-primary: #0B1220;
+    --text-secondary: rgba(11, 18, 32, 0.72);
+    --accent-primary: #10B981;
+    --accent-secondary: #0EA5E9;
+    --success: #16A34A;
+    --warning: #F59E0B;
+    --danger: #EF4444;
   }
 
   .dark {
-    /* Colorful dark theme with purple and orange accents */
-    --background: linear-gradient(135deg, hsl(280 25% 3%) 0%, hsl(290 30% 5%) 50%, hsl(280 25% 3%) 100%);
+    /* Colorful dark theme (not bluish): ink base + violet/magenta + teal */
+    --background: linear-gradient(135deg, hsl(260 35% 4%) 0%, hsl(292 45% 5%) 55%, hsl(245 40% 4%) 100%);
     --foreground: 0 0% 98%;
 
     --card: linear-gradient(135deg, hsl(280 20% 6%) 0%, hsl(290 25% 8%) 100%);
@@ -79,7 +92,7 @@
     --popover: linear-gradient(135deg, hsl(280 18% 8%) 0%, hsl(290 20% 10%) 100%);
     --popover-foreground: 0 0% 95%;
 
-    --primary: 142 70% 50%;
+    --primary: 285 85% 62%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: linear-gradient(135deg, hsl(280 18% 12%) 0%, hsl(290 15% 15%) 100%);
@@ -88,7 +101,7 @@
     --muted: linear-gradient(135deg, hsl(280 20% 10%) 0%, hsl(290 18% 12%) 100%);
     --muted-foreground: 0 0% 65%;
 
-    --accent: 18 85% 58%;
+    --accent: 172 90% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 65% 60%;
@@ -96,28 +109,28 @@
 
     --border: hsl(280 25% 15%);
     --input: hsl(280 25% 15%);
-    --ring: 142 70% 50%;
+    --ring: 285 85% 62%;
 
-    --sidebar-background: linear-gradient(135deg, hsl(280 30% 1%) 0%, hsl(290 25% 3%) 100%);
+    --sidebar-background: linear-gradient(135deg, hsl(260 40% 3%) 0%, hsl(292 45% 4%) 100%);
     --sidebar-foreground: 0 0% 75%;
-    --sidebar-primary: 142 70% 50%;
+    --sidebar-primary: 285 85% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: linear-gradient(135deg, hsl(280 18% 12%) 0%, hsl(290 15% 15%) 100%);
     --sidebar-accent-foreground: 0 0% 85%;
     --sidebar-border: hsl(280 25% 15%);
-    --sidebar-ring: 142 70% 50%;
+    --sidebar-ring: 285 85% 62%;
 
     /* Enhanced colorful dark mode energy colors */
-    --energy-green: 142 70% 50%;
-    --energy-blue: 199 85% 60%;
-    --energy-orange: 18 85% 65%;
+    --energy-green: 172 90% 45%;
+    --energy-blue: 200 95% 62%;
+    --energy-orange: 28 95% 64%;
     --energy-red: 0 65% 60%;
-    --energy-purple: 280 75% 70%;
+    --energy-purple: 285 85% 66%;
     --energy-yellow: 43 92% 68%;
     --energy-cyan: 188 80% 55%;
     --energy-pink: 326 70% 70%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(142 70% 50%), hsl(199 85% 60%));
+    --gradient-primary: linear-gradient(135deg, hsl(285 85% 62%), hsl(172 90% 45%));
     --gradient-secondary: linear-gradient(135deg, hsl(280 75% 70%), hsl(326 70% 70%));
     --gradient-accent: linear-gradient(135deg, hsl(18 85% 65%), hsl(43 92% 68%));
     --gradient-card: linear-gradient(135deg, hsl(280 20% 6%) 0%, hsl(290 25% 8%) 100%);
@@ -128,6 +141,18 @@
     --shadow-card-hover: 0 16px 48px hsl(280 50% 10% / 0.4), 0 24px 80px hsl(290 50% 8% / 0.3), 0 48px 160px hsl(280 50% 6% / 0.2);
     --shadow-glass: 0 8px 32px hsl(280 50% 8% / 0.25), inset 0 1px 0 hsla(255, 255, 255, 0.1);
     --shadow-neon: 0 0 30px hsl(var(--energy-green) / 0.5), 0 0 60px hsl(var(--energy-green) / 0.25);
+
+    /* EnergyIQ required design system variables (dark) */
+    --bg-primary: #0A0614;
+    --bg-secondary: #100A22;
+    --bg-card: rgba(20, 12, 40, 0.72);
+    --text-primary: rgba(238, 242, 255, 0.94);
+    --text-secondary: rgba(199, 200, 215, 0.84);
+    --accent-primary: #D946EF;
+    --accent-secondary: #2DD4BF;
+    --success: #34D399;
+    --warning: #FBBF24;
+    --danger: #FB7185;
   }
 }
 
