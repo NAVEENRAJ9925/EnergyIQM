@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { Zap, Activity, Gauge, Battery, Radio } from "lucide-react";
+import { Zap, Activity, Gauge, Battery, Radio, TrendingUp, TrendingDown } from "lucide-react";
 import { animate, motion, useMotionValue } from "framer-motion";
 
 interface MetricCardProps {
@@ -77,45 +77,81 @@ const MetricCard = ({ title, value, previousValue, unit, type, status = "live", 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -3 }}
-      className="group relative rounded-2xl border border-border/70 bg-card/85 dark:bg-slate-950/40 backdrop-blur-xl p-5 shadow-card hover:shadow-card-hover transition-all duration-300"
+      whileHover={{ y: -8, scale: 1.02 }}
+      className="group relative h-full"
     >
-      <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 card-sheen" />
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/90">
-          {title}
-        </span>
-        <div className={`relative p-2.5 rounded-xl ${bgMap[type]} border border-border/60`}>
-          <div className={`pointer-events-none absolute inset-0 rounded-xl blur-xl opacity-0 group-hover:opacity-70 transition-opacity ${bgMap[type]}`} />
-          <Icon className={`relative h-4 w-4 ${colorMap[type]}`} />
+      <div className="relative h-full p-6 rounded-3xl glass-dark border border-border/50 overflow-hidden hover-lift">
+        {/* Animated gradient background */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${
+          type === 'voltage' ? 'from-energy-yellow/10 to-energy-orange/5' :
+          type === 'current' ? 'from-energy-blue/10 to-energy-cyan/5' :
+          type === 'power' ? 'from-energy-green/10 to-emerald-500/5' :
+          type === 'energy' ? 'from-energy-orange/10 to-energy-yellow/5' :
+          'from-energy-purple/10 to-energy-pink/5'
+        } opacity-0 group-hover:opacity-100 transition-all duration-700`} />
+        
+        {/* Shimmer effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -translate-x-full group-hover:translate-x-full transition-transform duration-1200" />
+        
+        {/* Glow effect */}
+        <div className={`absolute -inset-1 bg-gradient-to-r ${
+          type === 'voltage' ? 'from-energy-yellow to-energy-orange' :
+          type === 'current' ? 'from-energy-blue to-energy-cyan' :
+          type === 'power' ? 'from-energy-green to-emerald-500' :
+          type === 'energy' ? 'from-energy-orange to-energy-yellow' :
+          'from-energy-purple to-energy-pink'
+        } opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500 rounded-3xl`} />
+        
+        <div className="relative z-10 h-full flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">
+              {title}
+            </span>
+            <div className={`relative p-3 rounded-2xl ${bgMap[type]} border border-border/40`}>
+              <div className={`absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-60 transition-opacity ${bgMap[type]}`} />
+              <Icon className={`relative h-5 w-5 ${colorMap[type]}`} />
+            </div>
+          </div>
+          
+          {/* Value Display */}
+          <div className="flex items-baseline gap-2 mb-4">
+            <span className="text-4xl font-black text-card-foreground font-mono tabular-nums tracking-tight">
+              {formatted}
+            </span>
+            <span className="text-sm font-bold text-muted-foreground/90">{unit}</span>
+          </div>
+          
+          {/* Status and Trend */}
+          <div className="mt-auto flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div
+                className={`h-2 w-2 rounded-full ${
+                  isLive ? colorMap[type].replace("text-", "bg-") : "bg-slate-500"
+                } ${isLive ? "animate-pulse-glow shadow-neon" : ""}`}
+              />
+              <span className="text-xs font-semibold text-muted-foreground">{statusLabel}</span>
+            </div>
+            {trend && (
+              <div className="flex items-center gap-1">
+                {trend.dir === "up" ? (
+                  <TrendingUp className="h-3 w-3 text-emerald-500" />
+                ) : trend.dir === "down" ? (
+                  <TrendingDown className="h-3 w-3 text-rose-500" />
+                ) : null}
+                <span
+                  className={`text-[11px] font-black ${
+                    trend.dir === "up" ? "text-emerald-500" : trend.dir === "down" ? "text-rose-500" : "text-muted-foreground"
+                  }`}
+                >
+                  {trend.pct.toFixed(1)}%
+                </span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-3xl font-bold text-card-foreground font-mono tabular-nums tracking-tight">
-          {formatted}
-        </span>
-        <span className="text-xs font-medium text-muted-foreground/90">{unit}</span>
-      </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-        <div
-          className={`h-1.5 w-1.5 rounded-full ${
-            isLive ? colorMap[type].replace("text-", "bg-") : "bg-slate-500"
-          } ${isLive ? "animate-pulse-glow" : ""}`}
-        />
-        <span className="text-xs text-muted-foreground">{statusLabel}</span>
-        </div>
-        {trend && (
-          <span
-            className={`text-[11px] font-semibold ${
-              trend.dir === "up" ? "text-emerald-500" : trend.dir === "down" ? "text-rose-500" : "text-muted-foreground"
-            }`}
-          >
-            {trend.dir === "up" ? "↑" : trend.dir === "down" ? "↓" : "•"} {trend.pct.toFixed(1)}%
-          </span>
-        )}
       </div>
     </motion.div>
   );

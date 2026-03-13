@@ -1,7 +1,8 @@
-import { Bell, Sun, Moon } from "lucide-react";
+import { Bell, Sun, Moon, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const TopNavbar = () => {
   const { user } = useAuth();
@@ -26,45 +27,77 @@ const TopNavbar = () => {
   };
 
   return (
-    <header className="h-14 flex items-center justify-between px-6 shrink-0 border-b border-border bg-card/80 dark:border-white/10 dark:bg-gradient-to-r dark:from-slate-950/80 dark:via-slate-900/80 dark:to-slate-950/80 backdrop-blur-xl transition-colors">
-      <div>
-        <div className="inline-flex items-center gap-2 mb-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-glow" />
-          <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-emerald-300/90">
+    <motion.header 
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="h-16 flex items-center justify-between px-8 shrink-0 border-b border-border/50 bg-card/90 dark:border-white/10 dark:bg-gradient-to-r dark:from-slate-950/90 dark:via-slate-900/85 dark:to-slate-950/90 backdrop-blur-2xl transition-all duration-500"
+    >
+      <motion.div 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.1 }}
+        className="space-y-1"
+      >
+        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20">
+          <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 animate-pulse-glow shadow-neon" />
+          <span className="text-[12px] font-black uppercase tracking-[0.2em] text-emerald-300/90 flex items-center gap-2">
+            <Sparkles className="h-3 w-3 animate-pulse-slow" />
             EnergyIQ Console
           </span>
         </div>
-        <h2 className="text-sm font-semibold text-foreground">
-          Welcome back,{" "}
-          <span className="bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent">
+        <h2 className="text-base font-bold text-foreground">
+          Welcome back,
+          <span className="ml-2 bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent font-black">
             {user?.name || "User"}
           </span>
         </h2>
-      </div>
-      <div className="flex items-center gap-3">
-        <button
+      </motion.div>
+      
+      <motion.div 
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2 }}
+        className="flex items-center gap-4"
+      >
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={toggleTheme}
-          className="p-2 rounded-lg border border-border bg-background hover:bg-muted transition-colors shadow-sm"
+          className="group relative p-3 rounded-2xl border border-border/50 glass-effect hover-lift overflow-hidden"
         >
-          {dark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-muted-foreground" />}
-        </button>
-        <button
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+          <motion.div
+            animate={{ rotate: dark ? 0 : 180 }}
+            transition={{ duration: 0.5 }}
+          >
+            {dark ? <Sun className="relative h-5 w-5 text-amber-400" /> : <Moon className="relative h-5 w-5 text-blue-400" />}
+          </motion.div>
+        </motion.button>
+        
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => navigate("/alerts")}
-          className="relative p-2 rounded-lg border border-border bg-background hover:bg-muted transition-colors shadow-sm"
+          className="group relative p-3 rounded-2xl border border-border/50 glass-effect hover-lift overflow-hidden"
         >
-          <Bell className="h-4 w-4 text-muted-foreground" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
-          <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-emerald-400" />
-        </button>
-        <button
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+          <Bell className="relative h-5 w-5 text-muted-foreground group-hover:text-emerald-400 transition-colors" />
+          <div className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 animate-ping" />
+          <div className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" />
+        </motion.button>
+        
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => navigate("/profile")}
-          className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-400 via-sky-400 to-cyan-300 flex items-center justify-center text-xs font-bold text-slate-950 shadow-[0_0_0_1px_rgba(15,23,42,0.25)] hover:shadow-md transition-shadow"
+          className="group relative h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-400 via-sky-400 to-cyan-300 flex items-center justify-center text-sm font-black text-slate-950 shadow-glass hover:shadow-neon transition-all duration-300 overflow-hidden"
           aria-label="Profile"
         >
-          {user?.name?.charAt(0).toUpperCase() || "U"}
-        </button>
-      </div>
-    </header>
+          <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+          <span className="relative">{user?.name?.charAt(0).toUpperCase() || "U"}</span>
+        </motion.button>
+      </motion.div>
+    </motion.header>
   );
 };
 

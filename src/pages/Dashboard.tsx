@@ -7,6 +7,7 @@ import MetricCard from "@/components/MetricCard";
 import { useEnergyData } from "@/hooks/useEnergyData";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
@@ -117,21 +118,21 @@ const Dashboard = () => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 650, easing: "easeOutQuart" as const },
+    animation: { duration: 850, easing: "easeOutQuart" as const },
     interaction: { mode: "index" as const, intersect: false },
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: "rgba(15, 23, 42, 0.92)",
+        backgroundColor: "rgba(15, 23, 42, 0.95)",
         titleColor: "rgba(226, 232, 240, 0.98)",
         bodyColor: "rgba(226, 232, 240, 0.92)",
-        borderColor: "rgba(148, 163, 184, 0.20)",
+        borderColor: "rgba(148, 163, 184, 0.25)",
         borderWidth: 1,
-        padding: 10,
-        cornerRadius: 12,
+        padding: 12,
+        cornerRadius: 16,
         displayColors: false,
-        titleFont: { size: 11, weight: "600" as const },
-        bodyFont: { size: 12, weight: "500" as const },
+        titleFont: { size: 12, weight: "700" as const },
+        bodyFont: { size: 13, weight: "600" as const },
         callbacks: {
           label: (item: any) => {
             const v = item?.parsed?.y;
@@ -145,34 +146,53 @@ const Dashboard = () => {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { font: { size: 10 }, color: "rgba(148,163,184,0.75)" },
+        ticks: { font: { size: 11, weight: "500" }, color: "rgba(148,163,184,0.8)" },
       },
       y: {
-        grid: { color: "rgba(148,163,184,0.10)", drawBorder: false },
-        ticks: { font: { size: 10 }, color: "rgba(148,163,184,0.75)" },
+        grid: { color: "rgba(148,163,184,0.12)", drawBorder: false },
+        ticks: { font: { size: 11, weight: "500" }, color: "rgba(148,163,184,0.8)" },
       },
     },
   };
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-300 text-[11px] font-medium mb-3">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-glow" />
-            LIVE IOT ENERGY STREAM
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-50">
-            Smart Energy <span className="bg-gradient-to-r from-emerald-400 via-sky-400 to-cyan-300 bg-clip-text text-transparent">Dashboard</span>
-          </h1>
-          <p className="mt-2 text-sm text-slate-400">
+      {/* Enhanced Header */}
+      <div className="flex flex-wrap items-center justify-between gap-6">
+        <div className="space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 text-emerald-300 text-[12px] font-semibold tracking-wide"
+          >
+            <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 animate-pulse-glow shadow-neon" />
+            <span>LIVE IOT ENERGY STREAM</span>
+            <Sparkles className="h-3 w-3 animate-pulse-slow" />
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-50"
+          >
+            Smart Energy 
+            <span className="block mt-2 bg-gradient-to-r from-emerald-400 via-sky-400 to-cyan-300 bg-clip-text text-transparent">
+              Dashboard
+            </span>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-base text-slate-400 max-w-2xl"
+          >
             Real-time monitoring from ESP8266 + PZEM-004T with intelligent trends and insights.
-          </p>
+          </motion.p>
         </div>
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
         <MetricCard
           title="Voltage"
           value={realtime.voltage}
@@ -220,23 +240,29 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Enhanced Charts */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative rounded-2xl border border-white/5 bg-slate-950/60 shadow-[0_18px_45px_rgba(15,23,42,0.85)] overflow-hidden"
+          transition={{ duration: 0.5 }}
+          className="group relative rounded-3xl border border-white/8 glass-dark overflow-hidden hover-lift"
         >
-          <div className="pointer-events-none absolute inset-x-12 -top-24 h-44 bg-gradient-to-b from-emerald-500/15 via-transparent to-transparent blur-3xl" />
-          <div className="relative p-5 sm:p-6">
-            <h3 className="text-sm font-semibold text-slate-100 mb-4 flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Power vs Time (Real-time)
-            </h3>
-            <div className="h-64">
+          {/* Gradient glow effect */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="pointer-events-none absolute inset-x-12 -top-32 h-48 bg-gradient-to-b from-emerald-500/20 via-transparent to-transparent blur-3xl" />
+          
+          <div className="relative p-6 sm:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-3 w-3 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 animate-pulse-glow shadow-neon" />
+              <h3 className="text-lg font-bold text-slate-100">Power vs Time (Real-time)</h3>
+              <div className="ml-auto px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <span className="text-xs font-semibold text-emerald-300">LIVE</span>
+              </div>
+            </div>
+            <div className="h-72">
               {powerChartData.labels.length === 0 ? (
-                <div className="h-full rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+                <div className="h-full rounded-2xl bg-white/5 border border-white/10 animate-pulse" />
               ) : (
                 <Line data={powerChartData} options={chartOptions} />
               )}
@@ -245,19 +271,22 @@ const Dashboard = () => {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.05 }}
-          className="relative rounded-2xl border border-white/5 bg-slate-950/60 shadow-[0_18px_45px_rgba(15,23,42,0.85)] overflow-hidden"
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="group relative rounded-3xl border border-white/8 glass-dark overflow-hidden hover-lift"
         >
-          <div className="pointer-events-none absolute inset-x-10 -top-24 h-44 bg-gradient-to-b from-sky-500/18 via-transparent to-transparent blur-3xl" />
-          <div className="relative p-5 sm:p-6">
-            <h3 className="text-sm font-semibold text-slate-100 mb-4">
-              Daily Energy Consumption
-            </h3>
-            <div className="h-64">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/10 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="pointer-events-none absolute inset-x-10 -top-32 h-48 bg-gradient-to-b from-sky-500/20 via-transparent to-transparent blur-3xl" />
+          
+          <div className="relative p-6 sm:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-3 w-3 rounded-full bg-gradient-to-r from-sky-400 to-purple-400 animate-pulse-slow" />
+              <h3 className="text-lg font-bold text-slate-100">Daily Energy Consumption</h3>
+            </div>
+            <div className="h-72">
               {dailyData.labels.length === 0 ? (
-                <div className="h-full rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+                <div className="h-full rounded-2xl bg-white/5 border border-white/10 animate-pulse" />
               ) : (
                 <Bar data={dailyData} options={chartOptions} />
               )}
@@ -267,19 +296,25 @@ const Dashboard = () => {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 18 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.08 }}
-        className="relative rounded-2xl border border-white/5 bg-slate-950/60 shadow-[0_18px_45px_rgba(15,23,42,0.9)] overflow-hidden"
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="group relative rounded-3xl border border-white/8 glass-dark overflow-hidden hover-lift"
       >
-        <div className="pointer-events-none absolute inset-x-24 -top-24 h-44 bg-gradient-to-b from-amber-400/16 via-transparent to-transparent blur-3xl" />
-        <div className="relative p-5 sm:p-6">
-          <h3 className="text-sm font-semibold text-slate-100 mb-4">
-            Monthly Energy Consumption
-          </h3>
-          <div className="h-64">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="pointer-events-none absolute inset-x-24 -top-32 h-48 bg-gradient-to-b from-amber-400/20 via-transparent to-transparent blur-3xl" />
+        
+        <div className="relative p-6 sm:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-3 w-3 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 animate-pulse-slower" />
+            <h3 className="text-lg font-bold text-slate-100">Monthly Energy Consumption</h3>
+            <div className="ml-auto px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+              <span className="text-xs font-semibold text-amber-300">TRENDING</span>
+            </div>
+          </div>
+          <div className="h-72">
             {monthlyData.labels.length === 0 ? (
-              <div className="h-full rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+              <div className="h-full rounded-2xl bg-white/5 border border-white/10 animate-pulse" />
             ) : (
               <Line data={monthlyData} options={chartOptions} />
             )}
