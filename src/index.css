@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
+    --background: 220 20% 98%;
     --foreground: 220 25% 10%;
 
     --card: 0 0% 100%;
@@ -21,7 +21,7 @@
     --secondary: 220 14% 92%;
     --secondary-foreground: 220 25% 10%;
 
-    --muted: 220 14% 95%;
+    --muted: 220 14% 96%;
     --muted-foreground: 220 10% 46%;
 
     --accent: 200 80% 50%;
@@ -30,8 +30,8 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 90%;
-    --input: 220 13% 90%;
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
     --ring: 160 84% 39%;
     --radius: 0.75rem;
 
@@ -54,15 +54,17 @@
 
     --gradient-primary: linear-gradient(135deg, hsl(160 84% 39%), hsl(200 80% 50%));
     --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 14% 97%));
-    --shadow-card: 0 1px 3px hsl(220 25% 10% / 0.06), 0 4px 12px hsl(220 25% 10% / 0.04);
-    --shadow-card-hover: 0 4px 12px hsl(220 25% 10% / 0.1), 0 8px 24px hsl(220 25% 10% / 0.06);
+    /* Slightly more premium elevation in light mode */
+    --shadow-card: 0 1px 2px hsl(220 25% 10% / 0.05), 0 8px 24px hsl(220 25% 10% / 0.06);
+    --shadow-card-hover: 0 2px 6px hsl(220 25% 10% / 0.08), 0 16px 40px hsl(220 25% 10% / 0.10);
   }
 
   .dark {
-    --background: 222 25% 8%;
+    /* Deeper, cleaner dark canvas */
+    --background: 222 35% 6%;
     --foreground: 210 20% 92%;
 
-    --card: 222 20% 12%;
+    --card: 222 25% 10%;
     --card-foreground: 210 20% 92%;
 
     --popover: 222 20% 12%;
@@ -74,7 +76,7 @@
     --secondary: 220 15% 18%;
     --secondary-foreground: 210 20% 92%;
 
-    --muted: 220 15% 16%;
+    --muted: 222 18% 14%;
     --muted-foreground: 220 10% 55%;
 
     --accent: 200 80% 55%;
@@ -83,8 +85,8 @@
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
+    --border: 222 18% 18%;
+    --input: 222 18% 18%;
     --ring: 160 84% 45%;
 
     --sidebar-background: 222 28% 6%;
@@ -104,9 +106,9 @@
     --energy-yellow: 45 95% 60%;
 
     --gradient-primary: linear-gradient(135deg, hsl(160 84% 45%), hsl(200 80% 55%));
-    --gradient-card: linear-gradient(135deg, hsl(222 20% 12%), hsl(222 20% 15%));
-    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.2), 0 4px 12px hsl(0 0% 0% / 0.15);
-    --shadow-card-hover: 0 4px 12px hsl(0 0% 0% / 0.3), 0 8px 24px hsl(0 0% 0% / 0.2);
+    --gradient-card: linear-gradient(135deg, hsl(222 25% 10%), hsl(222 22% 13%));
+    --shadow-card: 0 10px 30px hsl(0 0% 0% / 0.35);
+    --shadow-card-hover: 0 18px 55px hsl(0 0% 0% / 0.45);
   }
 }
 
@@ -116,6 +118,11 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Smooth theme switch without feeling sluggish */
+  html, body {
+    transition: background-color 220ms ease, color 220ms ease;
   }
 }
 
@@ -135,5 +142,9 @@
   .glass-effect {
     backdrop-filter: blur(12px);
     background: hsl(var(--card) / 0.8);
+  }
+
+  .card-sheen {
+    background: linear-gradient(135deg, hsl(var(--card) / 0.92), hsl(var(--card) / 0.72));
   }
 }

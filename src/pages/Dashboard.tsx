@@ -30,6 +30,12 @@ const Dashboard = () => {
   // Device LIVE is determined strictly by "freshness" of the last timestamp.
   const isLive = isLiveByTime;
 
+  const prevReading = useMemo(() => {
+    const valid = history.filter((r) => r.timestamp != null);
+    if (valid.length < 2) return null;
+    return valid[valid.length - 2];
+  }, [history]);
+
   const powerChartData = useMemo(() => {
     const valid = history.filter((r) => r.timestamp != null && r.power != null);
     const last30 = valid.slice(-30);
@@ -38,11 +44,22 @@ const Dashboard = () => {
       datasets: [{
         label: "Power (W)",
         data: last30.map((r) => r.power),
-        borderColor: "hsl(160, 84%, 39%)",
-        backgroundColor: "hsla(160, 84%, 39%, 0.1)",
+        borderColor: "hsl(160 84% 39%)",
+        backgroundColor: (ctx: { chart: any }) => {
+          const { chart } = ctx;
+          const { ctx: c, chartArea } = chart;
+          if (!chartArea) return "hsla(160, 84%, 39%, 0.08)";
+          const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          g.addColorStop(0, "hsla(160, 84%, 39%, 0.28)");
+          g.addColorStop(0.55, "hsla(160, 84%, 39%, 0.10)");
+          g.addColorStop(1, "hsla(160, 84%, 39%, 0.00)");
+          return g;
+        },
         fill: true,
         tension: 0.4,
         pointRadius: 0,
+        pointHoverRadius: 3,
+        borderWidth: 2,
       }],
     };
   }, [history]);
@@ -54,8 +71,18 @@ const Dashboard = () => {
       datasets: [{
         label: "Energy (kWh)",
         data: d.map((x) => x.energy),
-        backgroundColor: "hsl(200, 80%, 50%)",
-        borderRadius: 8,
+        backgroundColor: (ctx: { chart: any }) => {
+          const { chart } = ctx;
+          const { ctx: c, chartArea } = chart;
+          if (!chartArea) return "hsla(200, 80%, 50%, 0.8)";
+          const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          g.addColorStop(0, "hsla(200, 80%, 55%, 0.95)");
+          g.addColorStop(1, "hsla(200, 80%, 45%, 0.55)");
+          return g;
+        },
+        hoverBackgroundColor: "hsla(200, 80%, 55%, 0.98)",
+        borderRadius: 10,
+        borderSkipped: false,
       }],
     };
   }, [getDailyEnergy]);
@@ -67,11 +94,22 @@ const Dashboard = () => {
       datasets: [{
         label: "Energy (kWh)",
         data: m.map((x) => x.energy),
-        borderColor: "hsl(30, 95%, 55%)",
-        backgroundColor: "hsla(30, 95%, 55%, 0.1)",
+        borderColor: "hsl(30 95% 55%)",
+        backgroundColor: (ctx: { chart: any }) => {
+          const { chart } = ctx;
+          const { ctx: c, chartArea } = chart;
+          if (!chartArea) return "hsla(30, 95%, 55%, 0.08)";
+          const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          g.addColorStop(0, "hsla(30, 95%, 55%, 0.22)");
+          g.addColorStop(0.6, "hsla(30, 95%, 55%, 0.10)");
+          g.addColorStop(1, "hsla(30, 95%, 55%, 0.00)");
+          return g;
+        },
         fill: true,
         tension: 0.4,
         pointRadius: 2,
+        pointHoverRadius: 4,
+        borderWidth: 2,
       }],
     };
   }, [getMonthlyEnergy]);
@@ -79,10 +117,40 @@ const Dashboard = () => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
+    animation: { duration: 650, easing: "easeOutQuart" as const },
+    interaction: { mode: "index" as const, intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: "rgba(15, 23, 42, 0.92)",
+        titleColor: "rgba(226, 232, 240, 0.98)",
+        bodyColor: "rgba(226, 232, 240, 0.92)",
+        borderColor: "rgba(148, 163, 184, 0.20)",
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 12,
+        displayColors: false,
+        titleFont: { size: 11, weight: "600" as const },
+        bodyFont: { size: 12, weight: "500" as const },
+        callbacks: {
+          label: (item: any) => {
+            const v = item?.parsed?.y;
+            if (typeof v !== "number") return "";
+            const suffix = item?.dataset?.label?.includes("Power") ? " W" : " kWh";
+            return `${v.toFixed(2)}${suffix}`;
+          },
+        },
+      },
+    },
     scales: {
-      x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-      y: { grid: { color: "hsla(220, 10%, 50%, 0.1)" }, ticks: { font: { size: 10 } } },
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 10 }, color: "rgba(148,163,184,0.75)" },
+      },
+      y: {
+        grid: { color: "rgba(148,163,184,0.10)", drawBorder: false },
+        ticks: { font: { size: 10 }, color: "rgba(148,163,184,0.75)" },
+      },
     },
   };
 
@@ -108,6 +176,7 @@ const Dashboard = () => {
         <MetricCard
           title="Voltage"
           value={realtime.voltage}
+          previousValue={prevReading?.voltage ?? null}
           unit="V"
           type="voltage"
           status={isLive ? "live" : "disconnected"}
@@ -116,6 +185,7 @@ const Dashboard = () => {
         <MetricCard
           title="Current"
           value={realtime.current}
+          previousValue={prevReading?.current ?? null}
           unit="A"
           type="current"
           status={isLive ? "live" : "disconnected"}
@@ -124,6 +194,7 @@ const Dashboard = () => {
         <MetricCard
           title="Power"
           value={realtime.power}
+          previousValue={prevReading?.power ?? null}
           unit="W"
           type="power"
           status={isLive ? "live" : "disconnected"}
@@ -132,6 +203,7 @@ const Dashboard = () => {
         <MetricCard
           title="Energy"
           value={realtime.energy}
+          previousValue={prevReading?.energy ?? null}
           unit="kWh"
           type="energy"
           status={isLive ? "live" : "disconnected"}
@@ -140,6 +212,7 @@ const Dashboard = () => {
         <MetricCard
           title="Frequency"
           value={realtime.frequency}
+          previousValue={prevReading?.frequency ?? null}
           unit="Hz"
           type="frequency"
           status={isLive ? "live" : "disconnected"}
@@ -162,7 +235,11 @@ const Dashboard = () => {
               Power vs Time (Real-time)
             </h3>
             <div className="h-64">
-              <Line data={powerChartData} options={chartOptions} />
+              {powerChartData.labels.length === 0 ? (
+                <div className="h-full rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+              ) : (
+                <Line data={powerChartData} options={chartOptions} />
+              )}
             </div>
           </div>
         </motion.div>
@@ -179,7 +256,11 @@ const Dashboard = () => {
               Daily Energy Consumption
             </h3>
             <div className="h-64">
-              <Bar data={dailyData} options={chartOptions} />
+              {dailyData.labels.length === 0 ? (
+                <div className="h-full rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+              ) : (
+                <Bar data={dailyData} options={chartOptions} />
+              )}
             </div>
           </div>
         </motion.div>
@@ -197,7 +278,11 @@ const Dashboard = () => {
             Monthly Energy Consumption
           </h3>
           <div className="h-64">
-            <Line data={monthlyData} options={chartOptions} />
+            {monthlyData.labels.length === 0 ? (
+              <div className="h-full rounded-xl bg-white/5 border border-white/10 animate-pulse" />
+            ) : (
+              <Line data={monthlyData} options={chartOptions} />
+            )}
           </div>
         </div>
       </motion.div>
