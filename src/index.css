@@ -73,21 +73,12 @@
     --bg-secondary: #EEF2F8;
     --bg-card: #FFFFFF;
     --text-primary: #0B1220;
-    --text-secondary: rgba(11, 18, 32, 0.85);
+    --text-secondary: rgba(11, 18, 32, 0.72);
     --accent-primary: #10B981;
     --accent-secondary: #0EA5E9;
     --success: #16A34A;
     --warning: #F59E0B;
     --danger: #EF4444;
-    
-    /* Enhanced readability variables */
-    --text-muted: rgba(11, 18, 32, 0.75);
-    --text-disabled: rgba(11, 18, 32, 0.45);
-    --text-placeholder: rgba(11, 18, 32, 0.55);
-    --border-light: rgba(11, 18, 32, 0.12);
-    --border-strong: rgba(11, 18, 32, 0.18);
-    --bg-hover: rgba(11, 18, 32, 0.04);
-    --bg-active: rgba(11, 18, 32, 0.08);
   }
 
   .dark {
@@ -155,22 +146,13 @@
     --bg-primary: #0A0614;
     --bg-secondary: #100A22;
     --bg-card: rgba(20, 12, 40, 0.72);
-    --text-primary: rgba(238, 242, 255, 0.96);
-    --text-secondary: rgba(199, 200, 215, 0.88);
+    --text-primary: rgba(238, 242, 255, 0.94);
+    --text-secondary: rgba(199, 200, 215, 0.84);
     --accent-primary: #D946EF;
     --accent-secondary: #2DD4BF;
     --success: #34D399;
     --warning: #FBBF24;
     --danger: #FB7185;
-    
-    /* Enhanced dark mode readability variables */
-    --text-muted: rgba(199, 200, 215, 0.75);
-    --text-disabled: rgba(199, 200, 215, 0.45);
-    --text-placeholder: rgba(199, 200, 215, 0.55);
-    --border-light: rgba(238, 242, 255, 0.12);
-    --border-strong: rgba(238, 242, 255, 0.18);
-    --bg-hover: rgba(238, 242, 255, 0.08);
-    --bg-active: rgba(238, 242, 255, 0.12);
   }
 }
 
