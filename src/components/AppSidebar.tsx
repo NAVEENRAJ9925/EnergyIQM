@@ -17,18 +17,24 @@ const navItems = [
 
 const AppSidebar = () => {
   const { logout } = useAuth();
+  // User preference for collapsed, plus hover state for smooth UX:
   const [collapsed, setCollapsed] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  const isCollapsed = collapsed && !hovered;
 
   return (
     <aside
-      className={`${collapsed ? "w-16" : "w-64"} bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border transition-all duration-300 shrink-0 shadow-sm dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-950/95 dark:to-slate-950 dark:border-slate-800/70 dark:shadow-[12px_0_45px_rgba(15,23,42,0.7)]`}
+      className={`${isCollapsed ? "w-16" : "w-64"} bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border transition-all duration-300 shrink-0 shadow-sm dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-950/95 dark:to-slate-950 dark:border-slate-800/70 dark:shadow-[12px_0_45px_rgba(15,23,42,0.7)]`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {/* Logo */}
       <div className="p-4 flex items-center gap-3 border-b border-sidebar-border dark:border-slate-800/80">
         <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-400 via-sky-400 to-cyan-300 shrink-0 shadow-[0_0_0_1px_rgba(15,23,42,0.7)]">
           <Zap className="h-5 w-5 text-slate-950" />
         </div>
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="overflow-hidden">
             <h1 className="text-sm font-bold text-sidebar-accent-foreground tracking-tight">EnergyIQ</h1>
             <p className="text-xs text-sidebar-foreground/80">IoT Energy Manager</p>
@@ -48,7 +54,7 @@ const AppSidebar = () => {
           >
             <span className="absolute inset-y-1 left-1 w-px rounded-full bg-gradient-to-b from-emerald-400/0 via-emerald-400/70 to-emerald-400/0 opacity-0 group-[.active]:opacity-100 group-hover:opacity-60 transition-opacity hidden dark:block" />
             <item.icon className="h-4 w-4 shrink-0 text-sidebar-foreground/70 group-hover:text-emerald-400 group-[.active]:text-emerald-400" />
-            {!collapsed && <span className="relative">{item.title}</span>}
+            {!isCollapsed && <span className="relative">{item.title}</span>}
           </NavLink>
         ))}
       </nav>
@@ -56,18 +62,18 @@ const AppSidebar = () => {
       {/* Footer */}
       <div className="p-3 border-t border-sidebar-border dark:border-slate-800/80 space-y-1">
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={() => setCollapsed((prev) => !prev)}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors w-full"
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          {!collapsed && <span>Collapse</span>}
+          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {!isCollapsed && <span>Collapse</span>}
         </button>
         <button
           onClick={logout}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-colors w-full"
         >
           <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && <span>Logout</span>}
+          {!isCollapsed && <span>Logout</span>}
         </button>
       </div>
     </aside>
