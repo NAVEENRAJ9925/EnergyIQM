@@ -156,11 +156,6 @@ const Dashboard = () => {
             Dashboard
           </span>
         </motion.h1>
-
-        <p className="text-base text-gray-600 dark:text-slate-400 max-w-2xl">
-          Real-time monitoring from ESP8266 + PZEM-004T with intelligent trends
-          and insights.
-        </p>
       </div>
 
       {/* Metric Cards */}

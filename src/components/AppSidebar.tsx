@@ -52,7 +52,7 @@ const AppSidebar = () => {
             exit={{ opacity: 0, x: -20 }}
             className="overflow-hidden"
           >
-            <h1 className="text-lg font-black text-sidebar-accent-foreground tracking-tight bg-gradient-to-r from-emerald-400 to-cyan-300 bg-clip-text text-transparent">Power Sense</h1>
+            <h1 className="text-lg font-black text-sidebar-accent-foreground tracking-tight bg-gradient-to-r from-emerald-400 to-cyan-300 bg-clip-text text-transparent">PowerSense</h1>
             <p className="text-xs font-semibold text-sidebar-foreground/80 flex items-center gap-1">
               <Sparkles className="h-3 w-3 animate-pulse-glow" />
               IoT Energy Manager
