@@ -13,9 +13,13 @@ const Profile = () => {
 
   const exportCSV = () => {
     const headers = "Timestamp,Voltage,Current,Power,Energy,Frequency\n";
-    const rows = history.map((r) =>
-      `${r.timestamp.toISOString()},${r.voltage},${r.current},${r.power},${r.energy},${r.frequency}`
-    ).join("\n");
+    const rows = history
+      .filter((r) => r.timestamp)
+      .map((r) => {
+        const ts = r.timestamp ? r.timestamp.toISOString() : "";
+        return `${ts},${r.voltage ?? ""},${r.current ?? ""},${r.power ?? ""},${r.energy ?? ""},${r.frequency ?? ""}`;
+      })
+      .join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

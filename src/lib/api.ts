@@ -47,10 +47,33 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ email, password }),
       }),
+    forgotPassword: (email: string) =>
+      request<{ ok: boolean }>("/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      }),
+    verifyOtp: (email: string, otp: string) =>
+      request<{ resetToken: string }>("/auth/verify-otp", {
+        method: "POST",
+        body: JSON.stringify({ email, otp }),
+      }),
+    resetPassword: (email: string, resetToken: string, newPassword: string) =>
+      request<{ ok: boolean }>("/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({ email, resetToken, newPassword }),
+      }),
   },
   energy: {
     realtime: () =>
-      request<{ timestamp: string; voltage: number; current: number; power: number; energy: number; frequency: number }>(
+      request<{
+        timestamp: string | null;
+        voltage: number | null;
+        current: number | null;
+        power: number | null;
+        energy: number | null;
+        frequency: number | null;
+        live?: boolean;
+      }>(
         "/energy/realtime"
       ),
     history: (range: "daily" | "weekly" | "monthly") =>
@@ -59,17 +82,42 @@ export const api = {
       ),
     historyRaw: (limit = 100) =>
       request<
-        { timestamp: string; voltage: number; current: number; power: number; energy: number; frequency: number }[]
+        {
+          timestamp: string | null;
+          voltage: number | null;
+          current: number | null;
+          power: number | null;
+          energy: number | null;
+          frequency: number | null;
+          live?: boolean;
+        }[]
       >(`/energy/history-raw?limit=${limit}`),
     bill: (units: number) => request<{ units: number; total: number }>(`/energy/bill?units=${units}`),
   },
   device: {
     list: () =>
-      request<{ id: string; name: string; isOn: boolean }[]>("/device"),
+      request<
+        {
+          id: string;
+          name: string;
+          isOn: boolean;
+          reportedIsOn?: boolean | null;
+          isOnline?: boolean;
+          lastSeenAt?: string | null;
+          pending?: boolean;
+        }[]
+      >("/device"),
     generateKey: () =>
       request<{ deviceApiKey: string }>("/device/generate-key", { method: "POST" }),
     control: (device: string, state: boolean | "ON" | "OFF") =>
-      request<{ id: string; name: string; isOn: boolean }>("/device/control", {
+      request<{
+        id: string;
+        name: string;
+        isOn: boolean;
+        reportedIsOn?: boolean | null;
+        pending?: boolean;
+        isOnline?: boolean;
+      }>("/device/control", {
         method: "POST",
         body: JSON.stringify({ device, state }),
       }),

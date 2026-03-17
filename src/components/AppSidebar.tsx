@@ -1,152 +1,133 @@
 import {
-  LayoutDashboard, BarChart3, Receipt, Brain, Bell, User, LogOut, Zap, ChevronLeft, ChevronRight, Plug, Sparkles,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Zap,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { navItems } from "@/components/sidebar/navItems";
 
-const navItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Energy Usage", url: "/energy", icon: BarChart3 },
-  { title: "Bill Prediction", url: "/bill", icon: Receipt },
-  { title: "AI Insights", url: "/insights", icon: Brain },
-  { title: "Alerts", url: "/alerts", icon: Bell },
-  { title: "Device Control", url: "/devices", icon: Plug },
-  { title: "Profile", url: "/profile", icon: User },
-];
-
-const AppSidebar = () => {
+export default function AppSidebar() {
   const { logout } = useAuth();
-  // User preference for collapsed, plus hover state for smooth UX:
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [hovered, setHovered] = useState(false);
 
-  const isCollapsed = collapsed && !hovered;
+  // Auto-collapse on smaller screens; sidebar becomes a drawer there.
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 768px)");
+    const onChange = () => {
+      if (!mql.matches) {
+        setCollapsed(true);
+        setHovered(false);
+      }
+    };
+    onChange();
+    mql.addEventListener?.("change", onChange);
+    return () => mql.removeEventListener?.("change", onChange);
+  }, []);
+
+  const isExpanded = useMemo(() => !collapsed || hovered, [collapsed, hovered]);
+  const widthClass = collapsed ? "w-20" : "w-64";
 
   return (
-    <motion.aside
-      initial={{ width: collapsed ? 64 : 256 }}
-      animate={{ width: isCollapsed ? 64 : 256 }}
-      className={`bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border transition-all duration-500 ease-out shadow-sm dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-950/95 dark:to-slate-950 dark:border-slate-800/70 dark:shadow-[12px_0_45px_rgba(15,23,42,0.7)] relative overflow-hidden`}
+    <aside
+      className={cn(
+        "hidden md:flex fixed left-0 top-0 h-screen z-40 border-r border-white/10",
+        "bg-[#020617] dark:bg-[#020617] text-slate-200",
+        "transition-[width] duration-300 ease-in-out",
+        widthClass,
+      )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 via-transparent to-cyan-500/5 opacity-0 hover:opacity-100 transition-opacity duration-700" />
-      
-      {/* Logo */}
-      <div className="relative z-10 p-6 flex items-center gap-4 border-b border-sidebar-border dark:border-slate-800/80">
-        <motion.div 
-          whileHover={{ scale: 1.1, rotate: 180 }}
-          whileTap={{ scale: 0.95 }}
-          className="p-3 rounded-2xl bg-gradient-to-br from-emerald-400 via-sky-400 to-cyan-300 shrink-0 shadow-glass relative overflow-hidden"
+      {/* Logo / brand */}
+      <div className="flex items-center gap-3 px-3 py-4 border-b border-white/10">
+        <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-400 via-sky-400 to-cyan-300 flex items-center justify-center shrink-0">
+          <Zap className="h-4 w-4 text-slate-950" />
+        </div>
+        <div className={cn("min-w-0 transition-all duration-300", isExpanded ? "opacity-100" : "opacity-0 w-0")}>
+          <div className="text-sm font-black text-slate-50 leading-tight">EnergyIQ</div>
+          <div className="text-[11px] text-slate-400 truncate">Smart Energy Hub</div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          className={cn(
+            "ml-auto inline-flex items-center justify-center rounded-xl border border-white/10",
+            "h-9 w-9 hover:bg-white/5 transition-colors",
+          )}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          <div className="absolute inset-0 bg-white/20 animate-pulse-slow" />
-          <Zap className="relative h-6 w-6 text-slate-950" />
-        </motion.div>
-        {!isCollapsed && (
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="overflow-hidden"
-          >
-            <h1 className="text-lg font-black text-sidebar-accent-foreground tracking-tight bg-gradient-to-r from-emerald-400 to-cyan-300 bg-clip-text text-transparent">PowerSense</h1>
-            <p className="text-xs font-semibold text-sidebar-foreground/80 flex items-center gap-1">
-              <Sparkles className="h-3 w-3 animate-pulse-glow" />
-              IoT Energy Manager
-            </p>
-          </motion.div>
-        )}
+          {collapsed ? <PanelLeftOpen className="h-4 w-4 text-slate-200" /> : <PanelLeftClose className="h-4 w-4 text-slate-200" />}
+        </button>
       </div>
 
-      {/* Nav */}
-      <nav className="relative z-10 flex-1 p-4 space-y-2">
-        {navItems.map((item, index) => (
-          <motion.div
-            key={item.url}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.05 }}
-          >
+      {/* Nav items */}
+      <nav className="mt-3 flex-1 px-2 space-y-1 overflow-y-auto">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const link = (
             <NavLink
+              key={item.url}
               to={item.url}
               end
-              className="group relative flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-medium text-sidebar-foreground hover:text-sidebar-accent-foreground transition-all duration-300 hover:bg-sidebar-accent hover:scale-105 overflow-hidden"
-              activeClassName="bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-500 font-bold shadow-glass dark:from-emerald-500/10 dark:to-cyan-500/10 dark:text-emerald-300 dark:shadow-[0_10px_30px_rgba(15,23,42,0.8)]"
-            >
-              {/* Active state gradient line */}
-              <div className="absolute inset-y-2 left-2 w-1 rounded-full bg-gradient-to-b from-emerald-400 to-cyan-400 opacity-0 group-[.active]:opacity-100 transition-all duration-300 group-[.active]:scale-y-110" />
-              
-              {/* Hover gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-              
-              <item.icon className="relative h-5 w-5 shrink-0 text-sidebar-foreground/70 group-hover:text-emerald-400 group-[.active]:text-emerald-400 transition-colors duration-300" />
-              {!isCollapsed && (
-                <motion.span 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  className="relative font-semibold"
-                >
-                  {item.title}
-                </motion.span>
+              className={cn(
+                "group/nav flex items-center gap-3 rounded-2xl px-3 py-2.5",
+                "text-slate-300 hover:bg-white/5 hover:text-slate-50 transition-colors",
               )}
+              activeClassName="bg-white/6 text-emerald-300 shadow-[0_0_0_1px_rgba(16,185,129,0.25)]"
+            >
+              <div
+                className={cn(
+                  "h-10 w-10 rounded-2xl flex items-center justify-center shrink-0",
+                  "bg-white/0 group-hover/nav:bg-white/5 transition-colors",
+                )}
+              >
+                <Icon className="h-5 w-5" />
+              </div>
+              <span className={cn("text-sm font-semibold truncate", isExpanded ? "opacity-100" : "opacity-0 w-0")}>
+                {item.title}
+              </span>
             </NavLink>
-          </motion.div>
-        ))}
+          );
+
+          // Tooltips only matter when fully collapsed (and not temporarily expanded via hover).
+          if (!collapsed || hovered) return link;
+
+          return (
+            <Tooltip key={item.url} delayDuration={150}>
+              <TooltipTrigger asChild>{link}</TooltipTrigger>
+              <TooltipContent side="right" className="border-white/10 bg-slate-950 text-slate-100">
+                {item.title}
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
       </nav>
 
-      {/* Footer */}
-      <div className="relative z-10 p-4 border-t border-sidebar-border dark:border-slate-800/80 space-y-2">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setCollapsed((prev) => !prev)}
-          className="group relative flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-all duration-300 w-full overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-sidebar-accent/50 to-sidebar-accent/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-          <motion.div
-            animate={{ rotate: isCollapsed ? 0 : 180 }}
-            transition={{ duration: 0.3 }}
-          >
-            {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-          </motion.div>
-          {!isCollapsed && (
-            <motion.span 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="relative font-semibold"
-            >
-              Collapse
-            </motion.span>
-          )}
-        </motion.button>
-        
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+      {/* Bottom logout only */}
+      <div className="mt-auto p-2 border-t border-white/10">
+        <button
+          type="button"
           onClick={logout}
-          className="group relative flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-medium text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-300 w-full overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-destructive/10 to-destructive/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-          <LogOut className="h-5 w-5 shrink-0" />
-          {!isCollapsed && (
-            <motion.span 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="relative font-semibold"
-            >
-              Logout
-            </motion.span>
+          className={cn(
+            "w-full flex items-center gap-3 rounded-2xl px-3 py-2.5",
+            "hover:bg-rose-500/10 transition-colors",
           )}
-        </motion.button>
+        >
+          <div className="h-10 w-10 rounded-2xl flex items-center justify-center bg-rose-500/10 shrink-0">
+            <LogOut className="h-5 w-5 text-rose-300" />
+          </div>
+          <span className={cn("text-sm font-semibold text-rose-200", isExpanded ? "opacity-100" : "opacity-0 w-0")}>
+            Logout
+          </span>
+        </button>
       </div>
-    </motion.aside>
+    </aside>
   );
-};
-
-export default AppSidebar;
+}

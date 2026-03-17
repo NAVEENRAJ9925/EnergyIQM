@@ -11,6 +11,18 @@ export interface EnergyReading {
   live?: boolean;
 }
 
+const asFiniteNumberOrNull = (v: unknown) => {
+  if (v == null) return null;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+const asDateOrNull = (v: unknown) => {
+  if (v == null) return null;
+  const d = v instanceof Date ? v : new Date(String(v));
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
 const mapReading = (r: {
   timestamp: string | null;
   voltage: number | null;
@@ -20,13 +32,13 @@ const mapReading = (r: {
   frequency: number | null;
   live?: boolean;
 }): EnergyReading => ({
-  timestamp: r.timestamp ? new Date(r.timestamp) : null,
-  voltage: r.voltage,
-  current: r.current,
-  power: r.power,
-  energy: r.energy,
-  frequency: r.frequency,
-  live: r.live,
+  timestamp: asDateOrNull(r.timestamp),
+  voltage: asFiniteNumberOrNull(r.voltage),
+  current: asFiniteNumberOrNull(r.current),
+  power: asFiniteNumberOrNull(r.power),
+  energy: asFiniteNumberOrNull(r.energy),
+  frequency: asFiniteNumberOrNull(r.frequency),
+  live: !!r.live,
 });
 
 const emptyDaily = () => {
@@ -59,6 +71,9 @@ export const useEnergyData = () => {
   });
 
   const [history, setHistory] = useState<EnergyReading[]>([]);
+  const [realtimeLoading, setRealtimeLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [dailyData, setDailyData] = useState<{ day: string; energy: number }[]>(() => emptyDaily());
   const [weeklyData, setWeeklyData] = useState<{ week: string; energy: number }[]>(() => emptyWeekly());
   const [monthlyData, setMonthlyData] = useState<{ month: string; energy: number }[]>(() => emptyMonthly());
@@ -67,17 +82,28 @@ export const useEnergyData = () => {
     let cancelled = false;
     const fetchRealtime = async () => {
       try {
+        if (!cancelled) setRealtimeLoading(true);
         const r = await api.energy.realtime();
-        if (!cancelled) setRealtime(mapReading(r));
-      } catch {
-        // Fallback: keep default
+        if (!cancelled) {
+          setError(null);
+          setRealtime(mapReading(r));
+        }
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load live data");
+      } finally {
+        if (!cancelled) setRealtimeLoading(false);
       }
     };
     fetchRealtime();
     const interval = setInterval(fetchRealtime, 5000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchRealtime();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 
@@ -85,17 +111,28 @@ export const useEnergyData = () => {
     let cancelled = false;
     const fetchHistory = async () => {
       try {
+        if (!cancelled) setHistoryLoading(true);
         const raw = await api.energy.historyRaw(100);
-        if (!cancelled) setHistory(raw.map(mapReading));
-      } catch {
-        // Keep existing or empty
+        if (!cancelled) {
+          setError(null);
+          setHistory(raw.map(mapReading));
+        }
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load history");
+      } finally {
+        if (!cancelled) setHistoryLoading(false);
       }
     };
     fetchHistory();
     const interval = setInterval(fetchHistory, 10000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchHistory();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 
@@ -157,5 +194,14 @@ export const useEnergyData = () => {
   const getWeeklyEnergy = useCallback(() => weeklyData, [weeklyData]);
   const getMonthlyEnergy = useCallback(() => monthlyData, [monthlyData]);
 
-  return { realtime, history, getDailyEnergy, getMonthlyEnergy, getWeeklyEnergy };
+  return {
+    realtime,
+    history,
+    realtimeLoading,
+    historyLoading,
+    error,
+    getDailyEnergy,
+    getMonthlyEnergy,
+    getWeeklyEnergy,
+  };
 };

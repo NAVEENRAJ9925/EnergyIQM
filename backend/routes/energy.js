@@ -1,8 +1,47 @@
 const express = require('express');
 const EnergyReading = require('../models/EnergyReading');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
+
+function asFiniteNumber(v) {
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Some devices occasionally report 0/NaN for one field while others are valid.
+ * To prevent false readings in the UI, we normalize obvious inconsistencies:
+ * - If power exists but current is missing/zero, derive current = power / voltage (when voltage is sane).
+ * - If voltage & current exist but power is missing/zero, derive power = voltage * current.
+ * We keep legitimate 0s (e.g., no load) by applying conservative thresholds.
+ */
+function normalizeReading(r) {
+  const voltage = asFiniteNumber(r.voltage);
+  const current = asFiniteNumber(r.current);
+  const power = asFiniteNumber(r.power);
+  const energy = asFiniteNumber(r.energy);
+  const frequency = asFiniteNumber(r.frequency);
+
+  const out = { ...r, voltage, current, power, energy, frequency };
+
+  const vOk = voltage != null && voltage > 10; // avoid division by tiny/invalid voltage
+  const pOk = power != null && power > 10; // ignore tiny phantom power
+  const cOk = current != null && current > 0.01;
+
+  if (vOk && pOk && (!cOk || current === 0)) {
+    const derived = power / voltage;
+    if (Number.isFinite(derived) && derived >= 0) out.current = Math.round(derived * 1000) / 1000;
+  }
+
+  if (vOk && cOk && (power == null || power === 0)) {
+    const derived = voltage * current;
+    if (Number.isFinite(derived) && derived >= 0) out.power = Math.round(derived * 10) / 10;
+  }
+
+  return out;
+}
 
 // Tamil Nadu tariff logic for bill prediction
 function calculateBill(units) {
@@ -21,14 +60,25 @@ router.post('/reading', async (req, res) => {
     if (voltage == null || current == null || power == null || energy == null || frequency == null) {
       return res.status(400).json({ error: 'voltage, current, power, energy, frequency are required' });
     }
+    const v = asFiniteNumber(voltage);
+    const c = asFiniteNumber(current);
+    const p = asFiniteNumber(power);
+    const e = asFiniteNumber(energy);
+    const f = asFiniteNumber(frequency);
+    if ([v, c, p, e, f].some((x) => x == null)) {
+      return res.status(400).json({ error: 'voltage, current, power, energy, frequency must be valid numbers' });
+    }
     const reading = await EnergyReading.create({
-      voltage,
-      current,
-      power,
-      energy,
-      frequency,
+      voltage: v,
+      current: c,
+      power: p,
+      energy: e,
+      frequency: f,
       userId: userId || null,
     });
+    if (userId) {
+      await User.findByIdAndUpdate(userId, { lastReadingAt: new Date() }).catch(() => {});
+    }
     res.status(201).json(reading);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -55,7 +105,8 @@ router.get('/realtime', auth, async (req, res) => {
       });
     }
     reading.timestamp = reading.timestamp || reading.createdAt;
-    res.json({ ...reading, live: true });
+    const normalized = normalizeReading(reading);
+    res.json({ ...normalized, live: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -154,7 +205,7 @@ router.get('/history-raw', auth, async (req, res) => {
       .limit(limit)
       .lean();
     const reversed = readings.reverse().map((r) => ({
-      ...r,
+      ...normalizeReading(r),
       timestamp: r.timestamp || r.createdAt,
     }));
     res.json(reversed);

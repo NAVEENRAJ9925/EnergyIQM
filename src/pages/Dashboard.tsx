@@ -30,7 +30,7 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
-  const { realtime, history, getDailyEnergy, getMonthlyEnergy } = useEnergyData();
+  const { realtime, realtimeLoading, history, historyLoading, getDailyEnergy, getMonthlyEnergy } = useEnergyData();
 
   const [now, setNow] = useState(() => Date.now());
 
@@ -47,6 +47,8 @@ const Dashboard = () => {
   const ageSeconds = hasTimestamp ? Math.floor(ageMs / 1000) : null;
 
   const isLive = hasTimestamp && ageMs <= 10000;
+  const metricStatus: "live" | "disconnected" | "loading" =
+    realtimeLoading && !hasTimestamp ? "loading" : isLive ? "live" : "disconnected";
 
   const prevReading = useMemo(() => {
     const valid = history.filter((r) => r.timestamp != null);
@@ -149,7 +151,7 @@ const Dashboard = () => {
         <motion.h1
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-7xl font-black text-gray-800 dark:text-slate-200"
+          className="text-4xl sm:text-5xl lg:text-7xl font-black text-gray-800 dark:text-slate-200 leading-[1.05] break-words"
         >
           Smart Energy
           <span className="block mt-2 bg-gradient-to-r from-emerald-400 via-sky-400 to-cyan-300 bg-clip-text text-transparent">
@@ -160,18 +162,18 @@ const Dashboard = () => {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        <MetricCard title="Voltage" value={realtime.voltage} previousValue={prevReading?.voltage ?? null} unit="V" type="voltage" status={isLive ? "live" : "disconnected"} lastSeenSeconds={isLive ? null : ageSeconds}/>
-        <MetricCard title="Current" value={realtime.current} previousValue={prevReading?.current ?? null} unit="A" type="current" status={isLive ? "live" : "disconnected"} lastSeenSeconds={isLive ? null : ageSeconds}/>
-        <MetricCard title="Power" value={realtime.power} previousValue={prevReading?.power ?? null} unit="W" type="power" status={isLive ? "live" : "disconnected"} lastSeenSeconds={isLive ? null : ageSeconds}/>
-        <MetricCard title="Energy" value={realtime.energy} previousValue={prevReading?.energy ?? null} unit="kWh" type="energy" status={isLive ? "live" : "disconnected"} lastSeenSeconds={isLive ? null : ageSeconds}/>
-        <MetricCard title="Frequency" value={realtime.frequency} previousValue={prevReading?.frequency ?? null} unit="Hz" type="frequency" status={isLive ? "live" : "disconnected"} lastSeenSeconds={isLive ? null : ageSeconds}/>
+        <MetricCard title="Voltage" value={realtime.voltage} previousValue={prevReading?.voltage ?? null} unit="V" type="voltage" status={metricStatus} lastSeenSeconds={isLive ? null : ageSeconds}/>
+        <MetricCard title="Current" value={realtime.current} previousValue={prevReading?.current ?? null} unit="A" type="current" status={metricStatus} lastSeenSeconds={isLive ? null : ageSeconds}/>
+        <MetricCard title="Power" value={realtime.power} previousValue={prevReading?.power ?? null} unit="W" type="power" status={metricStatus} lastSeenSeconds={isLive ? null : ageSeconds}/>
+        <MetricCard title="Energy" value={realtime.energy} previousValue={prevReading?.energy ?? null} unit="kWh" type="energy" status={metricStatus} lastSeenSeconds={isLive ? null : ageSeconds}/>
+        <MetricCard title="Frequency" value={realtime.frequency} previousValue={prevReading?.frequency ?? null} unit="Hz" type="frequency" status={metricStatus} lastSeenSeconds={isLive ? null : ageSeconds}/>
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
         {/* Power Chart */}
-        <div className="rounded-3xl border border-gray-200 dark:border-white/10 p-8">
+        <div className="rounded-3xl border border-gray-200 dark:border-white/10 p-5 sm:p-6 lg:p-8 min-w-0">
 
           <div className="flex items-center gap-3 mb-6">
 
@@ -189,14 +191,18 @@ const Dashboard = () => {
 
           </div>
 
-          <div className="h-72">
-            <Line data={powerChartData} options={chartOptions} />
+          <div className="h-64 sm:h-72 min-w-0">
+            {historyLoading ? (
+              <div className="h-full w-full rounded-2xl bg-muted/40 animate-pulse" />
+            ) : (
+              <Line data={powerChartData} options={chartOptions} />
+            )}
           </div>
 
         </div>
 
         {/* Daily Chart */}
-        <div className="rounded-3xl border border-gray-200 dark:border-white/10 p-8">
+        <div className="rounded-3xl border border-gray-200 dark:border-white/10 p-5 sm:p-6 lg:p-8 min-w-0">
 
           <div className="flex items-center gap-3 mb-6">
             <div className="h-3 w-3 rounded-full bg-sky-400"/>
@@ -206,7 +212,7 @@ const Dashboard = () => {
             </h3>
           </div>
 
-          <div className="h-72">
+          <div className="h-64 sm:h-72 min-w-0">
             <Bar data={dailyData} options={chartOptions} />
           </div>
 
@@ -215,7 +221,7 @@ const Dashboard = () => {
       </div>
 
       {/* Monthly Chart */}
-      <div className="rounded-3xl border border-gray-200 dark:border-white/10 p-8">
+      <div className="rounded-3xl border border-gray-200 dark:border-white/10 p-5 sm:p-6 lg:p-8 min-w-0">
 
         <div className="flex items-center gap-3 mb-6">
 
@@ -233,7 +239,7 @@ const Dashboard = () => {
 
         </div>
 
-        <div className="h-72">
+        <div className="h-64 sm:h-72 min-w-0">
           <Line data={monthlyData} options={chartOptions} />
         </div>
 

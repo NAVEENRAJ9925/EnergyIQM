@@ -8,7 +8,7 @@ interface MetricCardProps {
   previousValue?: number | null;
   unit: string;
   type: "voltage" | "current" | "power" | "energy" | "frequency";
-  status?: "live" | "disconnected";
+  status?: "live" | "disconnected" | "loading";
   lastSeenSeconds?: number | null;
 }
 
@@ -40,9 +40,16 @@ const MetricCard = ({ title, value, previousValue, unit, type, status = "live", 
   const Icon = iconMap[type];
 
   const isLive = status === "live";
+  const isLoading = status === "loading";
   const numericValue = typeof value === "number" ? value : value != null ? Number(value) : null;
   const displayValue = isLive && numericValue != null && Number.isFinite(numericValue) ? numericValue : null;
-  const statusLabel = isLive ? "Live" : lastSeenSeconds != null ? `Disconnected · Last seen ${lastSeenSeconds}s ago` : "Disconnected";
+  const statusLabel = isLive
+    ? "Live"
+    : isLoading
+      ? "Loading…"
+      : lastSeenSeconds != null
+        ? `Disconnected · Last seen ${lastSeenSeconds}s ago`
+        : "Disconnected";
 
   // Animated value transitions
   const mv = useMotionValue(0);
@@ -60,11 +67,12 @@ const MetricCard = ({ title, value, previousValue, unit, type, status = "live", 
     0;
 
   const formatted = useMemo(() => {
+    if (isLoading) return "—";
     if (!isLive || displayValue == null) return "--";
     const v = mv.get();
     if (!Number.isFinite(v)) return "--";
     return v.toFixed(decimals);
-  }, [decimals, displayValue, isLive, mv]);
+  }, [decimals, displayValue, isLive, isLoading, mv]);
 
   const trend = useMemo(() => {
     if (!isLive || displayValue == null || previousValue == null) return null;
@@ -129,7 +137,7 @@ const MetricCard = ({ title, value, previousValue, unit, type, status = "live", 
             <div className="flex items-center gap-2">
               <div
                 className={`h-2 w-2 rounded-full ${
-                  isLive ? colorMap[type].replace("text-", "bg-") : "bg-slate-500"
+                  isLive ? colorMap[type].replace("text-", "bg-") : isLoading ? "bg-slate-400" : "bg-slate-500"
                 } ${isLive ? "animate-pulse-glow shadow-neon" : ""}`}
               />
               <span className="text-xs font-semibold text-muted-foreground">{statusLabel}</span>

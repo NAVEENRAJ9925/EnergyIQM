@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Power, Lightbulb, Fan, Snowflake, Clock, Plus, Trash2, Loader2 } from "lucide-react";
+import { Power, Lightbulb, Fan, Snowflake, Clock, Plus, Trash2, Loader2, WifiOff, Wifi, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 
@@ -12,7 +12,11 @@ const iconMap: Record<string, typeof Lightbulb> = {
 interface Device {
   id: string;
   name: string;
-  isOn: boolean;
+  isOn: boolean; // desired
+  reportedIsOn?: boolean | null; // actual (if device reports)
+  pending?: boolean;
+  isOnline?: boolean;
+  lastSeenAt?: string | null;
 }
 
 interface Schedule {
@@ -26,6 +30,7 @@ const DeviceControl = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [busyIds, setBusyIds] = useState<Record<string, boolean>>({});
   const [schedules, setSchedules] = useState<Schedule[]>([
     { id: "1", device: "Motor", action: "ON", time: "06:00" },
     { id: "2", device: "Motor", action: "OFF", time: "06:30" },
@@ -36,45 +41,88 @@ const DeviceControl = () => {
   const [newAction, setNewAction] = useState<"ON" | "OFF">("ON");
 
   useEffect(() => {
-    const load = () => {
+    let cancelled = false;
+    const load = async () => {
       api.device.list()
         .then((data) => {
+          if (cancelled) return;
           setError(null);
           setDevices(
             data.length > 0
-              ? data.map((d) => ({ ...d, icon: iconMap[d.name] || Lightbulb }))
+              ? data.map((d) => ({ ...d }))
               : [
-                  { id: "1", name: "Light", isOn: true },
-                  { id: "2", name: "Motor", isOn: false },
-                  { id: "3", name: "AC", isOn: false },
-                ]
+                  { id: "1", name: "Light", isOn: true, isOnline: false, pending: true },
+                  { id: "2", name: "Motor", isOn: false, isOnline: false, pending: true },
+                  { id: "3", name: "AC", isOn: false, isOnline: false, pending: true },
+                ],
           );
         })
         .catch((err) => {
+          if (cancelled) return;
           setError(err.message);
-          setDevices([
-            { id: "1", name: "Light", isOn: true },
-            { id: "2", name: "Motor", isOn: false },
-            { id: "3", name: "AC", isOn: false },
-          ]);
+          // Keep cached UI, but mark offline
+          setDevices((prev) =>
+            prev.length
+              ? prev.map((d) => ({ ...d, isOnline: false }))
+              : [
+                  { id: "1", name: "Light", isOn: true, isOnline: false, pending: true },
+                  { id: "2", name: "Motor", isOn: false, isOnline: false, pending: true },
+                  { id: "3", name: "AC", isOn: false, isOnline: false, pending: true },
+                ],
+          );
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
         });
     };
     load();
-    setLoading(false);
     const id = setInterval(load, 5000);
-    return () => clearInterval(id);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, []);
 
   const toggleDevice = async (id: string) => {
     const d = devices.find((x) => x.id === id);
     if (!d) return;
+    if (busyIds[id]) return;
+    if (d.isOnline === false) {
+      setError("Device is offline. Reconnect the ESP8266/WiFi and try again.");
+      return;
+    }
+
     const newState = !d.isOn;
-    setDevices((prev) => prev.map((x) => (x.id === id ? { ...x, isOn: newState } : x)));
+    setBusyIds((prev) => ({ ...prev, [id]: true }));
+    setDevices((prev) =>
+      prev.map((x) => (x.id === id ? { ...x, isOn: newState, pending: true } : x)),
+    );
     try {
       const res = await api.device.control(d.name, newState);
-      setDevices((prev) => prev.map((x) => (x.id === res.id || x.name === res.name ? { ...x, isOn: res.isOn, id: res.id } : x)));
-    } catch {
-      setDevices((prev) => prev.map((x) => (x.id === id ? { ...x, isOn: !newState } : x)));
+      setError(null);
+      setDevices((prev) =>
+        prev.map((x) =>
+          x.id === id || x.name === res.name
+            ? {
+                ...x,
+                id: res.id || x.id,
+                isOn: res.isOn,
+                reportedIsOn: res.reportedIsOn ?? x.reportedIsOn ?? null,
+                pending: res.pending ?? true,
+                isOnline: res.isOnline ?? x.isOnline,
+              }
+            : x,
+        ),
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to send command");
+      setDevices((prev) => prev.map((x) => (x.id === id ? { ...x, isOn: !newState, pending: false } : x)));
+    } finally {
+      setBusyIds((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
     }
   };
 
@@ -111,23 +159,32 @@ const DeviceControl = () => {
         <p className="text-sm text-muted-foreground">Control appliances connected through relays</p>
       </div>
       {error && (
-        <div className="rounded-lg border border-energy-orange/30 bg-energy-orange/5 p-3 text-sm text-energy-orange">
-          {error} — Showing cached state.
+        <div className="rounded-lg border border-energy-orange/30 bg-energy-orange/5 p-3 text-sm text-energy-orange flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+          <div className="min-w-0">
+            <div className="font-medium">Attention</div>
+            <div className="text-energy-orange/90">{error}</div>
+          </div>
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {devices.map((device, i) => {
           const Icon = iconMap[device.name] || Lightbulb;
+          const actual = device.reportedIsOn ?? null;
+          const isPending = device.pending || (actual != null && actual !== device.isOn);
+          const isOnline = device.isOnline !== false;
           return (
             <motion.div
               key={device.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className={`rounded-xl p-6 shadow-card border border-border transition-all cursor-pointer ${
-                device.isOn ? "bg-primary/5 border-primary/30 energy-glow" : "bg-card"
-              }`}
+              className={`
+                rounded-xl p-6 shadow-card border border-border transition-all
+                ${device.isOn ? "bg-primary/5 border-primary/30 energy-glow" : "bg-card"}
+                ${!isOnline ? "opacity-75" : ""}
+              `}
               onClick={() => toggleDevice(device.id)}
             >
               <div className="flex items-center justify-between mb-4">
@@ -139,11 +196,22 @@ const DeviceControl = () => {
                 </div>
               </div>
               <h3 className="text-sm font-semibold text-card-foreground">{device.name}</h3>
-              <div className="flex items-center gap-1.5 mt-1">
-                <Power className={`h-3 w-3 ${device.isOn ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`text-xs font-medium ${device.isOn ? "text-primary" : "text-muted-foreground"}`}>
-                  {device.isOn ? "ON" : "OFF"}
-                </span>
+              <div className="flex items-center justify-between gap-2 mt-2">
+                <div className="flex items-center gap-1.5">
+                  <Power className={`h-3 w-3 ${device.isOn ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className={`text-xs font-medium ${device.isOn ? "text-primary" : "text-muted-foreground"}`}>
+                    {device.isOn ? "ON" : "OFF"}
+                  </span>
+                  {isPending && (
+                    <span className="ml-2 text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/20">
+                      Pending
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  {isOnline ? <Wifi className="h-3.5 w-3.5 text-emerald-500" /> : <WifiOff className="h-3.5 w-3.5 text-rose-500" />}
+                  <span>{isOnline ? "Online" : "Offline"}</span>
+                </div>
               </div>
             </motion.div>
           );
