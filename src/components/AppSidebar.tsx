@@ -10,11 +10,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/sidebar/navItems";
-import { useSidebar } from "@/contexts/SidebarContext";
 
 export default function AppSidebar() {
   const { logout } = useAuth();
-  const { collapsed, setCollapsed } = useSidebar();
+  const [collapsed, setCollapsed] = useState(false);
   const [hovered, setHovered] = useState(false);
 
   const isExpanded = useMemo(() => !collapsed || hovered, [collapsed, hovered]);
