@@ -31,15 +31,28 @@ const mapReading = (r: {
   energy: number | null;
   frequency: number | null;
   live?: boolean;
-}): EnergyReading => ({
-  timestamp: asDateOrNull(r.timestamp),
-  voltage: asFiniteNumberOrNull(r.voltage),
-  current: asFiniteNumberOrNull(r.current),
-  power: asFiniteNumberOrNull(r.power),
-  energy: asFiniteNumberOrNull(r.energy),
-  frequency: asFiniteNumberOrNull(r.frequency),
-  live: !!r.live,
-});
+}): EnergyReading => {
+  const voltage = asFiniteNumberOrNull(r.voltage);
+  const current = asFiniteNumberOrNull(r.current);
+  const power = asFiniteNumberOrNull(r.power);
+  const energy = asFiniteNumberOrNull(r.energy);
+  const frequency = asFiniteNumberOrNull(r.frequency);
+
+  // Enforce consistency: if current is truly zero, then power/energy should be zero.
+  // This prevents stale or default values showing when the device reports no current.
+  const normalizedPower = current === 0 ? 0 : power;
+  const normalizedEnergy = current === 0 ? 0 : energy;
+
+  return {
+    timestamp: asDateOrNull(r.timestamp),
+    voltage,
+    current,
+    power: normalizedPower,
+    energy: normalizedEnergy,
+    frequency,
+    live: !!r.live,
+  };
+};
 
 const emptyDaily = () => {
   const days: { day: string; energy: number }[] = [];
