@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Zap, Activity, Gauge, Battery, Radio, TrendingUp, TrendingDown } from "lucide-react";
-import { animate, motion, useMotionValue } from "framer-motion";
+import { animate, motion, useMotionValue, useMotionValueEvent } from "framer-motion";
 
 interface MetricCardProps {
   title: string;
@@ -53,6 +53,12 @@ const MetricCard = ({ title, value, previousValue, unit, type, status = "live", 
 
   // Animated value transitions
   const mv = useMotionValue(displayValue ?? 0);
+  const [animatedValue, setAnimatedValue] = useState(displayValue ?? 0);
+  
+  useMotionValueEvent(mv, "change", (latest) => {
+    setAnimatedValue(latest);
+  });
+
   useEffect(() => {
     if (!isLive || displayValue == null) return;
     const controls = animate(mv, displayValue, { duration: 0.45, ease: "easeOut" });
@@ -69,10 +75,9 @@ const MetricCard = ({ title, value, previousValue, unit, type, status = "live", 
   const formatted = useMemo(() => {
     if (isLoading) return "—";
     if (!isLive || displayValue == null) return "--";
-    const v = mv.get();
-    if (!Number.isFinite(v)) return "--";
-    return v.toFixed(decimals);
-  }, [decimals, displayValue, isLive, isLoading, mv]);
+    if (!Number.isFinite(animatedValue)) return "--";
+    return animatedValue.toFixed(decimals);
+  }, [decimals, displayValue, isLive, isLoading, animatedValue]);
 
   const trend = useMemo(() => {
     if (!isLive || displayValue == null || previousValue == null) return null;
