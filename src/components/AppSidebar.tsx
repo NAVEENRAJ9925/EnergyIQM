@@ -24,11 +24,10 @@ export default function AppSidebar() {
         widthClass,
       )}
     >
-      {/* Collapse / expand toggle (desktop only) */}
       <button
         type="button"
         onClick={() => setCollapsed((v) => !v)}
-        className="hidden lg:flex absolute top-4 -right-3 z-10 h-6 w-6 items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700 transition-colors"
+        className="absolute top-4 right-[-12px] bg-slate-800 border border-slate-700 rounded-full p-1 text-slate-200 hover:bg-slate-700 transition-colors"
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {collapsed ? <PanelLeftOpen className="h-3 w-3" /> : <PanelLeftClose className="h-3 w-3" />}
