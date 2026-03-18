@@ -4,39 +4,26 @@ import {
   PanelLeftOpen,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/sidebar/navItems";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 export default function AppSidebar() {
   const { logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(true);
+  const { collapsed, setCollapsed } = useSidebar();
   const [hovered, setHovered] = useState(false);
 
-  // Auto-collapse on smaller screens; sidebar becomes a drawer there.
-  useEffect(() => {
-    const mql = window.matchMedia("(min-width: 768px)");
-    const onChange = () => {
-      if (!mql.matches) {
-        setCollapsed(true);
-        setHovered(false);
-      }
-    };
-    onChange();
-    mql.addEventListener?.("change", onChange);
-    return () => mql.removeEventListener?.("change", onChange);
-  }, []);
-
   const isExpanded = useMemo(() => !collapsed || hovered, [collapsed, hovered]);
-  const widthClass = collapsed ? "w-20" : "w-64";
+  const widthClass = collapsed ? "w-[70px]" : "w-60";
 
   return (
     <aside
       className={cn(
-        "hidden md:flex fixed left-0 top-0 h-screen z-40 border-r border-white/10",
+        "hidden lg:flex fixed left-0 top-0 h-screen z-40 border-r border-white/10",
         "bg-[#020617] dark:bg-[#020617] text-slate-200",
         "transition-[width] duration-300 ease-in-out",
         widthClass,

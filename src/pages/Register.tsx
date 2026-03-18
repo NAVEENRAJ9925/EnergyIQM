@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Zap, Mail, Lock, User, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { FloatingInput } from "@/components/auth/FloatingInput";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -30,68 +31,31 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <div className="hidden lg:flex lg:w-1/2 gradient-primary items-center justify-center p-12">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-center">
-          <div className="inline-flex p-4 rounded-2xl bg-primary-foreground/10 mb-6">
-            <Zap className="h-12 w-12 text-primary-foreground" />
-          </div>
-          <h1 className="text-4xl font-bold text-primary-foreground mb-4">EnergyIQ</h1>
-          <p className="text-lg text-primary-foreground/80 max-w-md">
-            Join thousands monitoring their energy consumption with AI-powered insights.
-          </p>
-        </motion.div>
-      </div>
+    <AuthShell title="Create account" subtitle="Start monitoring your energy today">
+      {error && <div className="mb-4 p-3 rounded-xl bg-rose-500/10 text-rose-200 text-sm border border-rose-500/20">{error}</div>}
 
-      <div className="flex-1 flex items-center justify-center p-8">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-          <h2 className="text-2xl font-bold text-foreground mb-1">Create account</h2>
-          <p className="text-muted-foreground mb-8">Start monitoring your energy today</p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <FloatingInput id="name" label="Name" value={name} onChange={setName} autoComplete="name" />
+        <FloatingInput id="email" label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />
+        <FloatingInput id="password" label="Password" type="password" value={password} onChange={setPassword} autoComplete="new-password" />
 
-          {error && <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-400 via-sky-400 to-cyan-300 text-slate-950 font-bold text-sm hover:opacity-90 transition-all duration-300 ease-in-out disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          Create Account
+        </button>
+      </form>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Name</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="John Doe" />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="name@example.com" />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="••••••••" />
-              </div>
-            </div>
-            <button type="submit" disabled={loading}
-              className="w-full py-2.5 rounded-lg gradient-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2">
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              Create Account
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>
-          </p>
-        </motion.div>
-      </div>
-    </div>
+      <p className="mt-4 text-sm text-slate-400">
+        Already have an account?{" "}
+        <Link to="/login" className="text-cyan-300 hover:text-cyan-200 hover:underline transition-colors">
+          Sign in
+        </Link>
+      </p>
+    </AuthShell>
   );
 };
 

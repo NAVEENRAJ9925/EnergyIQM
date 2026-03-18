@@ -43,7 +43,7 @@ const TopNavbar = () => {
         className="flex items-center gap-3 min-w-0"
       >
         {/* Mobile sidebar trigger */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <Sheet>
             <SheetTrigger asChild>
               <button
