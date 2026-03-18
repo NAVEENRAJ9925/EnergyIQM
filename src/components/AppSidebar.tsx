@@ -22,7 +22,7 @@ export default function AppSidebar() {
   return (
     <aside
       className={cn(
-        "hidden lg:flex fixed left-0 top-0 h-screen z-40 border-r border-white/10",
+        "hidden lg:flex flex-col h-screen border-r border-slate-800 bg-slate-900",
         "bg-[#020617] dark:bg-[#020617] text-slate-200",
         "transition-[width] duration-300 ease-in-out",
         widthClass,
