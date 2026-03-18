@@ -52,7 +52,7 @@ const MetricCard = ({ title, value, previousValue, unit, type, status = "live", 
         : "Disconnected";
 
   // Animated value transitions
-  const mv = useMotionValue(0);
+  const mv = useMotionValue(displayValue ?? 0);
   useEffect(() => {
     if (!isLive || displayValue == null) return;
     const controls = animate(mv, displayValue, { duration: 0.45, ease: "easeOut" });
