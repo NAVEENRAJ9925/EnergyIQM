@@ -25,7 +25,7 @@ export default function AppSidebar() {
           <Zap className="h-4 w-4 text-slate-950" />
         </div>
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-white leading-tight">EnergyIQ</div>
+          <div className="text-sm font-semibold text-white leading-tight">Power Sense</div>
           <div className="text-[11px] text-slate-400 truncate">Smart Energy Hub</div>
         </div>
       </div>
