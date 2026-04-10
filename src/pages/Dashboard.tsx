@@ -228,7 +228,7 @@ const Dashboard = () => {
           <div className="h-3 w-3 rounded-full bg-amber-400"/>
 
           <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100">
-            Monthly Energy Consumption
+            Monthly Energy Consumptions
           </h3>
 
           <div className="ml-auto px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
