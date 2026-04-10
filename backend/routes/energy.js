@@ -90,7 +90,7 @@ router.get('/realtime', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
     const reading = await EnergyReading.findOne({ userId })
-      .sort({ timestamp: -1 })
+      .sort({ createdAt: -1 })   // ✅ FIXED
       .lean();
     if (!reading) {
       // No readings yet for this user: explicitly mark as not live / no data
@@ -134,9 +134,9 @@ router.get('/history', auth, async (req, res) => {
       startDate = new Date(now.getFullYear(), 0, 1);
     }
 
-    match.timestamp = { $gte: startDate };
+    match.createdAt = { $gte: startDate };
 
-    const readings = await EnergyReading.find(match).sort({ timestamp: 1 }).lean();
+    const readings = await EnergyReading.find(match).sort({ createdAt: -1 }).lean();
 
     let result;
     if (range === 'daily') {
@@ -201,7 +201,7 @@ router.get('/history-raw', auth, async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
     const userId = req.user.userId;
     const readings = await EnergyReading.find({ userId })
-      .sort({ timestamp: -1 })
+    .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
     const reversed = readings.reverse().map((r) => ({
