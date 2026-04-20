@@ -12,6 +12,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
+  updateUser: (name: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -44,6 +45,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem("iot_user", JSON.stringify(res.user));
   }, []);
 
+  const updateUser = useCallback(async (name: string) => {
+    const updatedUser = await api.auth.updateProfile(name);
+    setUser(updatedUser);
+    localStorage.setItem("iot_user", JSON.stringify(updatedUser));
+  }, []);
+
   useEffect(() => {
     const t = localStorage.getItem("energyiq_token");
     if (t) setToken(t);
@@ -56,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

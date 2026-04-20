@@ -1,15 +1,34 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, Mail, Shield, Download, Key, Copy, Loader2 } from "lucide-react";
+import { User, Mail, Shield, Download, Key, Copy, Loader2, Edit2, Check, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEnergyData } from "@/hooks/useEnergyData";
 import { api } from "@/lib/api";
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { history } = useEnergyData();
   const [deviceKey, setDeviceKey] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [savingName, setSavingName] = useState(false);
+
+  const handleSaveName = async () => {
+    if (!editName.trim() || editName.trim() === user?.name) {
+      setIsEditingName(false);
+      return;
+    }
+    setSavingName(true);
+    try {
+      await updateUser(editName.trim());
+      setIsEditingName(false);
+    } catch (e) {
+      console.error("Failed to update name", e);
+    } finally {
+      setSavingName(false);
+    }
+  };
 
   const exportCSV = () => {
     const headers = "Timestamp,Voltage,Current,Power,Energy,Frequency\n";
@@ -50,9 +69,47 @@ const Profile = () => {
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
             <User className="h-4 w-4 text-muted-foreground" />
-            <div>
+            <div className="flex-1">
               <p className="text-xs text-muted-foreground">Name</p>
-              <p className="text-sm font-medium text-card-foreground">{user?.name}</p>
+              {isEditingName ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="flex-1 bg-background border border-border rounded-md px-2 py-1 text-sm text-card-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    disabled={savingName}
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveName}
+                    disabled={savingName}
+                    className="p-1.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+                  >
+                    {savingName ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                  </button>
+                  <button
+                    onClick={() => setIsEditingName(false)}
+                    disabled={savingName}
+                    className="p-1.5 rounded-md bg-muted hover:bg-muted-foreground/10 text-muted-foreground transition-colors disabled:opacity-50"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-card-foreground">{user?.name}</p>
+                  <button
+                    onClick={() => {
+                      setEditName(user?.name || "");
+                      setIsEditingName(true);
+                    }}
+                    className="p-1.5 rounded-md hover:bg-muted-foreground/10 text-muted-foreground transition-colors"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">

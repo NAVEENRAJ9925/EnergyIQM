@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const PasswordReset = require('../models/PasswordReset');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -88,6 +89,21 @@ router.post('/login', async (req, res) => {
       token,
       user: { id: user._id.toString(), name: user.name, email: user.email },
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/auth/profile
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+    const user = await User.findByIdAndUpdate(req.user.userId, { name: name.trim() }, { new: true });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ id: user._id.toString(), name: user.name, email: user.email });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -62,6 +62,11 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ email, resetToken, newPassword }),
       }),
+    updateProfile: (name: string) =>
+      request<{ id: string; name: string; email: string }>("/auth/profile", {
+        method: "PUT",
+        body: JSON.stringify({ name }),
+      }),
   },
   energy: {
     realtime: () =>
