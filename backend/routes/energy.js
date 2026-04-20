@@ -86,7 +86,7 @@ router.post('/reading', async (req, res) => {
 });
 
 // GET /api/energy/realtime — latest energy reading (per user)
-router.get('/realtime', async (req, res) => {
+router.get('/realtime', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
     const reading = await EnergyReading.findOne({ userId })
@@ -113,7 +113,7 @@ router.get('/realtime', async (req, res) => {
 });
 
 // GET /api/energy/history?range=daily|weekly|monthly (per user)
-router.get('/history', async (req, res) => {
+router.get('/history', auth, async (req, res) => {
   try {
     const range = req.query.range || 'daily';
     const userId = req.user.userId;
@@ -196,7 +196,7 @@ router.get('/bill', auth, (req, res) => {
 });
 
 // GET /api/energy/history-raw — raw readings for charts (last N points, per user)
-router.get('/history-raw',  async (req, res) => {
+router.get('/history-raw', auth, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
     const userId = req.user.userId;
